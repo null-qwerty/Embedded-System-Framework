@@ -58,7 +58,7 @@ public:
         } key;
     } DBUSData;
 
-    DBUS(UART_HandleTypeDef *huart);
+    DBUS(UART_HandleTypeDef *huart, dmaOption dma = DISABLE);
 
     void decodeDBUSMessage();
 
@@ -66,7 +66,7 @@ public:
 
 private:
     DBUSData dbusData = {};
-    uint8_t dbusBuffer[DBUS_BUFFER_SIZE] = {};
+    uint8_t dbusBuffer[2][DBUS_BUFFER_SIZE] = {};
 
     bool ifDataValid();
 };

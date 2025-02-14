@@ -1,7 +1,8 @@
 #include "BaseControl/Connectivity/UART/UART.hpp"
 
-UART::UART(UART_HandleTypeDef *huart)
+UART::UART(UART_HandleTypeDef *huart, dmaOption dma)
     : huart(huart)
+    , dma(dma)
 {
 }
 
@@ -13,6 +14,11 @@ UART &UART::init()
 {
     HAL_UART_DeInit(huart);
     HAL_UART_Init(huart);
+    if (dma & RX) {
+        HAL_UART_Receive_DMA(huart,
+                             xReceiveFrame.data[1 - xReceiveFrame.readIndex],
+                             xReceiveFrame.length);
+    }
     return *this;
 }
 
@@ -33,13 +39,32 @@ uint8_t UART::getState()
 
 uint8_t UART::sendMessage()
 {
-    return HAL_UART_Transmit(huart, xSendFrame.data, xSendFrame.length, 20);
+    if (dma & TX) {
+        xSendFrame.readIndex = 1 - xSendFrame.readIndex;
+        HAL_UART_Transmit_DMA(huart, xSendFrame.data[xSendFrame.readIndex],
+                              xSendFrame.length);
+        return HAL_OK;
+    }
+    return HAL_UART_Transmit(huart, xSendFrame.data[xSendFrame.readIndex],
+                             xSendFrame.length, 20);
 }
 
 uint8_t UART::receiveMessage()
 {
-    return HAL_UART_Receive(huart, xReceiveFrame.data, xReceiveFrame.length,
-                            20);
+    if (dma & RX) {
+        if (huart->hdmarx->State == HAL_DMA_STATE_READY) {
+            xReceiveFrame.readIndex = 1 - xReceiveFrame.readIndex;
+            // huart->hdmarx->State = HAL_DMA_STATE_BUSY;
+            HAL_UART_Receive_DMA(
+                huart, xReceiveFrame.data[1 - xReceiveFrame.readIndex],
+                xReceiveFrame.length);
+            return HAL_OK;
+        }
+        return HAL_BUSY;
+    }
+    return HAL_UART_Receive(huart,
+                            xReceiveFrame.data[1 - xReceiveFrame.readIndex],
+                            xReceiveFrame.length, 20);
 }
 
 uint8_t UART::sendReceiveMessage()
