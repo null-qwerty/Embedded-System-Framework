@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseControl/Connectivity/Connectivity.hpp"
-#include "BaseControl/Controller/pidController.hpp"
+#include "BaseControl/Controller/classicController.hpp"
 
 /**
  * @brief class Motor
@@ -69,19 +69,19 @@ public:
      *
      * @return pidController& 角度环控制器
      */
-    pidController &getAngleLoopController();
+    classicController *&getAngleLoopController();
     /**
      * @brief 获取速度环控制器
      *
      * @return pidController& 速度环控制器
      */
-    pidController &getSpeedLoopController();
+    classicController *&getSpeedLoopController();
     /**
      * @brief 获取电流环控制器
      *
      * @return pidController& 电流环控制器
      */
-    pidController &getCurrentLoopController();
+    classicController *&getCurrentLoopController();
 
     /**
      * @brief 获取电机发送 ID，用于发送数据
@@ -124,7 +124,9 @@ protected:
     MotorState targetState = {}; ///< 电机目标状态
     MotorState refState = {}; ///< 电机目标状态, 用于控制器计算
 
-    pidController angleLoop, speedLoop, currentLoop; ///< pid 控制器
+    classicController *angleLoop = nullptr;
+    classicController *speedLoop = nullptr;
+    classicController *currentLoop = nullptr;
 
     Connectivity &connectivity; ///< 通信接口，定义为引用，避免拷贝
 

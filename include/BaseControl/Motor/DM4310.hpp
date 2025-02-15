@@ -19,7 +19,6 @@ private:
 
     const float DM4310_MAX_TAU = 10.f;
     const float DM4310_MAX_VEL = 30.f;
-    const float PI = 3.141593f;
 
     uint16_t linearFloat2Uint(float x, float x_max, float x_min, uint8_t bits);
     float linearUint2Float(uint16_t x, float x_max, float x_min, uint8_t bits);

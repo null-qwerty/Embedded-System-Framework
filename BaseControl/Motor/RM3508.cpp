@@ -100,10 +100,20 @@ float RM3508::calculateControlData()
         getTargetState().position += 360.0f;
     // 计算控制量
     refState.position = getTargetState().position;
-    refState.velocity = getTargetState().velocity +
-                        angleLoop.Calculate(refState.position, state.position);
-    refState.toreque = getTargetState().toreque +
-                       speedLoop.Calculate(refState.velocity, state.velocity);
+    if (angleLoop != nullptr) {
+        refState.velocity =
+            getTargetState().velocity +
+            angleLoop->calculate(refState.position, state.position);
+    } else {
+        refState.velocity = getTargetState().velocity;
+    }
+    if (speedLoop != nullptr) {
+        refState.toreque =
+            getTargetState().toreque +
+            speedLoop->calculate(refState.velocity, state.velocity);
+    } else {
+        refState.toreque = getTargetState().toreque;
+    }
 
     return refState.toreque;
 }

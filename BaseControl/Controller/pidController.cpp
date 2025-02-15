@@ -51,7 +51,7 @@ pidController &pidController::init()
 
     return *this;
 }
-float pidController::Calculate(float Ref, float Fbk)
+float pidController::calculate(float Ref, float Fbk)
 {
     // clang-format off
     // v.data.up = _IQmpy(v.param.Kr, v.term.Ref) - v.term.Fbk;

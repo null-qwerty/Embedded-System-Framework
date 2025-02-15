@@ -1,7 +1,8 @@
 #include "BaseControl/Motor/DM4310.hpp"
 #include "BaseControl/Connectivity/CAN/CAN.hpp"
 #include "BaseControl/Connectivity/Connectivity.hpp"
-#include "stm32f4xx_hal_can.h"
+
+#include "Math/Math.hpp"
 
 DM4310::DM4310(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw)
     : Motor(can, send_id, receive_id)
@@ -158,10 +159,20 @@ float DM4310::calculateControlData()
         getTargetState().position = 1.2;
     // 计算控制量
     refState.position = getTargetState().position;
-    refState.velocity = getTargetState().velocity +
-                        angleLoop.Calculate(refState.position, state.position);
-    refState.toreque = getTargetState().toreque +
-                       speedLoop.Calculate(refState.velocity, state.velocity);
+    if (angleLoop != nullptr) {
+        refState.velocity =
+            getTargetState().velocity +
+            angleLoop->calculate(refState.position, state.position);
+    } else {
+        refState.velocity = getTargetState().velocity;
+    }
+    if (speedLoop != nullptr) {
+        refState.toreque =
+            getTargetState().toreque +
+            speedLoop->calculate(refState.velocity, state.velocity);
+    } else {
+        refState.toreque = getTargetState().toreque;
+    }
 
     return refState.toreque;
 }

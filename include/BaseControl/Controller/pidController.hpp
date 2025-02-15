@@ -1,5 +1,7 @@
 #pragma once
 
+#include "classicController.hpp"
+
 /**
  * @brief class pidController
  * pid 控制器，使用 TI 开源 pid算法。
@@ -21,7 +23,7 @@
  *
  * pidController::Calculate(float,float) 计算控制量
  */
-class pidController {
+class pidController : public classicController {
 public:
     /**
      * @brief 默认构造函数
@@ -49,7 +51,7 @@ public:
      */
     ~pidController() = default;
 
-    pidController &init();
+    pidController &init() override;
     /**
      * @brief PID 控制器更新
      *
@@ -57,7 +59,7 @@ public:
      * @param Fbk 当前值
      * @return float 输出值
      */
-    float Calculate(float Ref, float Fbk);
+    float calculate(float Ref, float Fbk) override;
     /**
      * @brief 设置滤波器系数
      *

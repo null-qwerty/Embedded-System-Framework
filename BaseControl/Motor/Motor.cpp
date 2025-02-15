@@ -22,15 +22,15 @@ Motor::MotorState &Motor::getTargetState(void)
     return targetState;
 }
 
-pidController &Motor::getAngleLoopController()
+classicController *&Motor::getAngleLoopController()
 {
     return this->angleLoop;
 }
-pidController &Motor::getSpeedLoopController()
+classicController *&Motor::getSpeedLoopController()
 {
     return this->speedLoop;
 }
-pidController &Motor::getCurrentLoopController()
+classicController *&Motor::getCurrentLoopController()
 {
     return this->currentLoop;
 }
