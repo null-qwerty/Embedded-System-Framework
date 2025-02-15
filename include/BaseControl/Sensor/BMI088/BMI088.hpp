@@ -15,7 +15,7 @@ public:
             float pitch;
             float yaw;
         } gyro;
-        float temprature;
+        float temperature;
     } Data_t;
 
     BMI088(Connectivity &connectivity);
@@ -27,7 +27,7 @@ public:
 
 private:
     Data_t data = {};
-    uint8_t accBuffer[7] = {}, gyroBuffer[6] = {}, tempratureBuffer[3] = {};
+    uint8_t accBuffer[7] = {}, gyroBuffer[6] = {}, temperatureBuffer[3] = {};
     uint8_t accChipID = 0, gyroChipID = 0;
 
     BMI088 &initAcc();
@@ -35,7 +35,7 @@ private:
 
     uint8_t readAccel();
     uint8_t readGyro();
-    uint8_t readTemprature();
+    uint8_t readTemperature();
 
     uint8_t readByte(uint8_t reg, uint8_t *data);
     uint8_t writeByte(uint8_t reg, uint8_t data);

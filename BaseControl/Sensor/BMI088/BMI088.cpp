@@ -21,7 +21,7 @@ void *BMI088::getData()
 {
     readAccel();
     readGyro();
-    readTemprature();
+    readTemperature();
 
     return &data;
 }
@@ -183,7 +183,7 @@ uint8_t BMI088::readGyro()
     return ret;
 }
 
-uint8_t BMI088::readTemprature()
+uint8_t BMI088::readTemperature()
 {
     uint8_t ret = 0;
 
@@ -192,7 +192,7 @@ uint8_t BMI088::readTemprature()
     ((SPI::xSPIFrame_t *)connectivity.getSendFrame())->data = &add;
     ((SPI::xSPIFrame_t *)connectivity.getSendFrame())->length = 1;
     ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->data =
-        tempratureBuffer;
+        temperatureBuffer;
     // 同加速度计，第一个字节是无效的
     ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->length = 3;
     connectivity.sendMessage();
@@ -200,10 +200,10 @@ uint8_t BMI088::readTemprature()
     DISABLE_ACC();
 
     int16_t temp =
-        ((int16_t)(tempratureBuffer[1] << 3) | (tempratureBuffer[2] >> 5));
+        ((int16_t)(temperatureBuffer[1] << 3) | (temperatureBuffer[2] >> 5));
     if (temp > 1023)
         temp -= 2048;
-    data.temprature = temp * 0.125f + 23.0f;
+    data.temperature = temp * 0.125f + 23.0f;
 
     return ret;
 }
