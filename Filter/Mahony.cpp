@@ -9,13 +9,13 @@ Mahony::Mahony(float sampleFreq, float kp, float ki)
 {
 }
 
-Mahony &Mahony::init(float wn)
+Mahony &Mahony::init(float tau)
 {
     this->errorInt = Vector3f::Zero();
 
-    float xi = 0.7071f;
-    this->kp = 2.0f * xi * wn;
-    this->ki = wn * wn;
+    float beta = 2.146f / tau;
+    kp = 2.0f * beta;
+    ki = beta * beta;
 
     return *this;
 }

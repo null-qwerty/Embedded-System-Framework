@@ -9,7 +9,7 @@ public:
     Mahony(float sampleFreq, float kp = 10.f, float ki = 0.01f);
     ~Mahony() = default;
 
-    Mahony &init(float wn);
+    Mahony &init(float tau);
     Quaternion update(Vector3f gyro, Vector3f accel, Vector3f magn);
     Quaternion update(Vector3f gyro, Vector3f accel);
     Quaternion yawZeroDriftOffset(float yaw);
