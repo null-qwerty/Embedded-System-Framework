@@ -34,6 +34,8 @@ public:
     Matrix<Rows, Cols> &operator*=(const float &scalar);
     Matrix<Rows, Cols> &operator/=(const float &scalar);
 
+    bool operator==(const Matrix<Rows, Cols> &other) const;
+
     Matrix<Rows, Cols> &operator<<(float data);
     Matrix<Rows, Cols> &operator,(float data);
 
@@ -188,6 +190,16 @@ Matrix<Rows, Cols> &Matrix<Rows, Cols>::operator/=(const float &scalar)
 {
     arm_mat_scale_f32(&matrix, 1.0f / scalar, &matrix);
     return *this;
+}
+
+template <int Rows, int Cols>
+bool Matrix<Rows, Cols>::operator==(const Matrix<Rows, Cols> &other) const
+{
+    for (int i = 0; i < Rows * Cols; i++) {
+        if (this->data[i] != other.data[i])
+            return false;
+    }
+    return true;
 }
 
 template <int Rows, int Cols>
