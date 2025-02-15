@@ -117,9 +117,9 @@ uint8_t BMI088::readAccel()
     uint8_t add = BMI088_ACC_OUT_REG | BMI088_READ;
     ((SPI::xSPIFrame_t *)connectivity.getSendFrame())->data = &add;
     ((SPI::xSPIFrame_t *)connectivity.getSendFrame())->length = 1;
-    connectivity.sendMessage();
     ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->data = accBuffer;
     ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->length = 7;
+    connectivity.sendMessage();
     ret = connectivity.receiveMessage();
     DISABLE_ACC();
 
@@ -167,9 +167,9 @@ uint8_t BMI088::readGyro()
     uint8_t add = BMI088_GYRO_OUT_REG | BMI088_READ;
     ((SPI::xSPIFrame_t *)connectivity.getSendFrame())->data = &add;
     ((SPI::xSPIFrame_t *)connectivity.getSendFrame())->length = 1;
-    connectivity.sendMessage();
     ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->data = gyroBuffer;
     ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->length = 6;
+    connectivity.sendMessage();
     ret = connectivity.receiveMessage();
     DISABLE_GYRO();
 

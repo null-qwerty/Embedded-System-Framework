@@ -6,12 +6,13 @@
 
 class SPI : public Connectivity {
 public:
+    enum dmaOption { DISABLE = 0, RX = 1, TX = 2, RX_TX = 3 };
     typedef struct xSPIFrame_s {
         uint8_t *data = nullptr;
         uint16_t length = 0;
     } xSPIFrame_t;
 
-    SPI(SPI_HandleTypeDef *hspi);
+    SPI(SPI_HandleTypeDef *hspi, dmaOption dma = dmaOption::DISABLE);
     ~SPI();
 
     virtual SPI &init() override;
@@ -29,4 +30,6 @@ private:
 
     xSPIFrame_t xReceiveFrame = {};
     xSPIFrame_t xSendFrame = {};
+
+    dmaOption dma = dmaOption::DISABLE;
 };
