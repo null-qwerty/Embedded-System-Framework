@@ -27,7 +27,7 @@ public:
 
 private:
     Data_t data = {};
-    uint8_t accBuffer[7] = {}, gyroBuffer[6] = {}, tempratureBuffer[2] = {};
+    uint8_t accBuffer[7] = {}, gyroBuffer[6] = {}, tempratureBuffer[3] = {};
     uint8_t accChipID = 0, gyroChipID = 0;
 
     BMI088 &initAcc();

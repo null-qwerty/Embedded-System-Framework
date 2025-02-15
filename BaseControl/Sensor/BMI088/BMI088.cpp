@@ -193,12 +193,14 @@ uint8_t BMI088::readTemprature()
     ((SPI::xSPIFrame_t *)connectivity.getSendFrame())->length = 1;
     ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->data =
         tempratureBuffer;
-    ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->length = 2;
-    ret = connectivity.sendReceiveMessage();
+    // 同加速度计，第一个字节是无效的
+    ((SPI::xSPIFrame_t *)connectivity.getReceiveFrame())->length = 3;
+    connectivity.sendMessage();
+    ret = connectivity.receiveMessage();
     DISABLE_ACC();
 
     int16_t temp =
-        ((int16_t)(tempratureBuffer[0] << 3) | (tempratureBuffer[1] >> 5));
+        ((int16_t)(tempratureBuffer[1] << 3) | (tempratureBuffer[2] >> 5));
     if (temp > 1023)
         temp -= 2048;
     data.temprature = temp * 0.125f + 23.0f;
