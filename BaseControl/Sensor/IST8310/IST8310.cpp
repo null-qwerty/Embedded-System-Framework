@@ -22,7 +22,7 @@ IST8310 &IST8310::init()
 
     writeByte(IST8310_CNTL2_REG, 0x00);
     HAL_Delay(150);
-    writeByte(IST8310_AVGCNTL_REG, IST8310_SAMPLE_AVG_8);
+    writeByte(IST8310_AVGCNTL_REG, IST8310_SAMPLE_AVG_16);
     HAL_Delay(150);
     writeByte(IST8310_CNTL1_REG, IST8310_CONTINUOUS_MODE_200HZ);
 
@@ -31,10 +31,11 @@ IST8310 &IST8310::init()
 
 void *IST8310::getData()
 {
-    if (readData(IST8310_DATA_X_L_REG, dataBuffer, 6) != HAL_OK)
+    if (readData(IST8310_DATA_X_L_REG, dataBuffer, 6) != HAL_OK ||
+        readData(IST8310_DATA_TEMP_L_REG, dataBuffer + 6, 2) != HAL_OK) {
         init();
-    if (readData(IST8310_DATA_TEMP_L_REG, dataBuffer + 6, 2) != HAL_OK)
-        init();
+        return &data;
+    }
 
     data.x = *((int16_t *)(dataBuffer + 0)) * 0.3; // 单位：uT
     data.y = *((int16_t *)(dataBuffer + 2)) * 0.3;
