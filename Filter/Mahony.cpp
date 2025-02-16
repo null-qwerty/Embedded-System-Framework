@@ -123,7 +123,7 @@ Quaternion Mahony::update(Vector3f gyro, Vector3f accel)
 Quaternion Mahony::yawZeroDriftOffset(float yaw)
 {
     auto euler = q.toEulerAngles();
-    q.fromEulerAngles(yaw, euler[1], euler[0]);
+    q.fromEulerAngles(euler[2] - yaw, euler[1], euler[0]);
     q.normalize();
 
     return q;
