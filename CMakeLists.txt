@@ -1,3 +1,5 @@
+set(CMSISDSP ${CMAKE_CURRENT_LIST_DIR}/3rd-party/cmsis-dsp)
+
 include_directories(
     include
     /usr/arm-linux-gnueabi/include
