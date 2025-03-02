@@ -8,10 +8,10 @@
 
 class Buzzer {
 public:
-    Buzzer(TIM_HandleTypeDef *htim, uint32_t channel, uint32_t clock_speed,
-           uint32_t pwm_max);
+    Buzzer(TIM_HandleTypeDef *htim, uint16_t channel, uint32_t clock_speed,
+           uint16_t pwm_max);
     Buzzer &on(uint16_t freq, float loudness);
-    Buzzer &play(Note& note);
+    Buzzer &play(Note &note);
     Buzzer &off();
 
 private:
