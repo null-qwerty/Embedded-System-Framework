@@ -1,14 +1,11 @@
 #pragma once
 
-class Note {
-public:
+struct Note {
     Note();
     Note(int frequency, int duration);
     ~Note();
 
-    Note &play();
-
-private:
     int frequency;
     int duration;
+    float loudness = 1.0;
 };

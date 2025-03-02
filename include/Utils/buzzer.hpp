@@ -2,21 +2,22 @@
 
 #include "main.h"
 
-#define MAX_BUZZER_PWM 999
-#define MIN_BUZZER_PWM 700
+#include "note.hpp"
 
-#define proport 84000 // Tclk/(arr+1)=84000000/(1000)
-#define FREQUENCY_TO_ARR(f) ((proport / f) - 1)
+#ifdef __TIM_H__
 
-/**
- * @brief 打开蜂鸣器
- *
- * @param psc 用于设置预分频器的值，调节频率
- * @param pwm 用于设置占空比，调节音量
- */
-void buzzer_on(uint16_t psc, uint16_t pwm);
-/**
- * @brief 关闭蜂鸣器
- *
- */
-void buzzer_off(void);
+class Buzzer {
+public:
+    Buzzer(TIM_HandleTypeDef *htim, uint32_t channel, uint32_t clock_speed,
+           uint32_t pwm_max);
+    Buzzer &on(uint16_t freq, float loudness);
+    Buzzer &play(Note& note);
+    Buzzer &off();
+
+private:
+    TIM_HandleTypeDef *htim;
+    uint32_t channel;
+    uint32_t proport;
+    uint32_t maxPwm;
+};
+#endif
