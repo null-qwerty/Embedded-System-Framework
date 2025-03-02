@@ -1,12 +1,13 @@
 #include "BaseControl/Connectivity/I2C/I2C.hpp"
-#include "stm32f4xx_hal_i2c.h"
 #include <stdint.h>
 
+#ifdef __I2C_H__
 I2C::I2C(I2C_HandleTypeDef *hi2c, dmaOption dma, bool isMaster)
     : hi2c(hi2c)
     , isMaster(isMaster)
     , dma(dma)
 {
+    this->method = Method::I2C;
 }
 
 I2C::~I2C()
@@ -130,3 +131,4 @@ I2C &I2C::operator=(const I2C &other)
     isMaster = other.isMaster;
     return *this;
 }
+#endif

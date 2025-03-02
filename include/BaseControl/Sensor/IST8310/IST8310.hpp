@@ -2,6 +2,8 @@
 
 #include "BaseControl/Sensor/Sensor.hpp"
 
+#if defined RSTN_IST8310_GPIO_Port
+
 class IST8310 : public Sensor {
 public:
     typedef struct Data_s {
@@ -26,3 +28,4 @@ private:
     uint8_t readByte(uint8_t reg, uint8_t *data);
     uint8_t readData(uint8_t reg, uint8_t *data, uint8_t lenth);
 };
+#endif

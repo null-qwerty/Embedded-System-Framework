@@ -1,9 +1,12 @@
 #include "BaseControl/Connectivity/UART/UART.hpp"
 
+#if defined __USART_H__ || defined __UART_H__
+
 UART::UART(UART_HandleTypeDef *huart, dmaOption dma)
     : huart(huart)
     , dma(dma)
 {
+    this->method = Method::UART;
 }
 
 UART::~UART(void)
@@ -71,3 +74,4 @@ uint8_t UART::sendReceiveMessage()
 {
     return sendMessage() << 4 | receiveMessage();
 }
+#endif

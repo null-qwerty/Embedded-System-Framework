@@ -1,9 +1,10 @@
 #pragma once
 
-#include "i2c.h"
+#include "main.h"
 
 #include "BaseControl/Connectivity/Connectivity.hpp"
 
+#ifdef __I2C_H__
 class I2C : public Connectivity {
 public:
     enum dmaOption { DISABLE = 0, RX = 1, TX = 2, RX_TX = 3 };
@@ -41,3 +42,4 @@ private:
     uint8_t readMemory();
     uint8_t writeMemory();
 };
+#endif

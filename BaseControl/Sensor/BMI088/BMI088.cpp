@@ -3,8 +3,6 @@
 
 #include "BaseControl/Connectivity/SPI/SPI.hpp"
 
-#include "Utils/Utils.hpp"
-
 BMI088::BMI088(Connectivity &connectivity)
     : Sensor(connectivity)
 {
@@ -30,10 +28,10 @@ BMI088 &BMI088::reset()
 {
     // 加速度计复位，寄存器重置，重置完后加速度计默认为休眠状态
     writeDataToAcc(BMI088_ACC_SOFTRESET_REG, BMI088_ACC_SOFTRESET_VALUE);
-    delay_us(1000);
+    HAL_Delay(1);
     // 陀螺仪复位，寄存器重置，重置完后陀螺仪默认为开启状态
     writeDataToGyro(BMI088_GYRO_SOFTRESET_REG, BMI088_GYRO_SOFTRESET_VALUE);
-    delay_us(50000);
+    HAL_Delay(50);
     init();
     return *this;
 }
@@ -45,16 +43,16 @@ BMI088 &BMI088::initAcc()
     readDataFromAcc(BMI088_CHIP_ID_REG, &accChipID);
     // 加速度计默认为休眠状态，需要设置为激活状态
     writeDataToAcc(BMI088_ACC_PWR_CFG_REG, BMI088_ACC_PWR_CFG_ACTIVE);
-    delay_us(1000);
+    HAL_Delay(1);
     // 设置加速度计量程为 ±3g，带宽为正常模式，输出数据速率为 1600Hz
     writeDataToAcc(BMI088_ACC_RANGE_REG, BMI088_ACC_RANGE_3G);
-    delay_us(1000);
+    HAL_Delay(1);
     writeDataToAcc(BMI008_ACC_CONF_REG, (1 << 7) |
                                             (BMI088_ACC_CONF_BWP_NORM << 4) |
                                             (BMI088_ACC_CONF_ODR_1600_Hz));
     // 设置加速度计为激活状态
     writeDataToAcc(BMI088_ACC_PWR_CTRL_REG, BMI088_ACC_PWR_CTRL_ON);
-    delay_us(1000);
+    HAL_Delay(1);
     // 读取加速度计芯片 ID，正常情况下应该为 0x1E
     readDataFromAcc(BMI088_CHIP_ID_REG, &accChipID);
     readDataFromAcc(BMI088_CHIP_ID_REG, &accChipID);
@@ -68,11 +66,11 @@ BMI088 &BMI088::initGyro()
     readDataFromGyro(BMI088_CHIP_ID_REG, &gyroChipID);
     // 设置陀螺仪量程为 ±2000°/s
     writeDataToGyro(BMI088_GYRO_RANGE_REG, BMI088_GYRO_RANGE_2000_DEG_S);
-    delay_us(1000);
+    HAL_Delay(1);
     // 设置陀螺仪输出数据速率为 1000Hz，滤波器带宽为 116Hz
     writeDataToGyro(BMI088_GYRO_BANDWIDTH_REG,
                     BMI088_GYRO_ODR_1000Hz_BANDWIDTH_116Hz);
-    delay_us(1000);
+    HAL_Delay(1);
     // 读取陀螺仪芯片 ID，正常情况下应该为 0x0F
     readDataFromGyro(BMI088_CHIP_ID_REG, &gyroChipID);
     readDataFromGyro(BMI088_CHIP_ID_REG, &gyroChipID);

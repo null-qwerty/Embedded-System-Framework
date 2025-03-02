@@ -1,9 +1,10 @@
 #pragma once
 
-#include "can.h"
+#include "main.h"
 
 #include "BaseControl/Connectivity/Connectivity.hpp"
 
+#ifdef __CAN_H__
 /**
  * @brief CAN 通信类，封装了 HAL 库的 CAN 相关函数
  *
@@ -48,3 +49,4 @@ private:
     xReceptionFrame_t receiveFrame = {};
     xTransmissionFrame_t sendFrame = {};
 };
+#endif

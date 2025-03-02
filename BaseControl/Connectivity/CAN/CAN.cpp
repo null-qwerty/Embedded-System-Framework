@@ -1,14 +1,13 @@
 #include "BaseControl/Connectivity/CAN/CAN.hpp"
 #include "BaseControl/Connectivity/Connectivity.hpp"
 
-#include "stm32f4xx_hal_can.h"
-#include "stm32f4xx_hal_def.h"
-
+#ifdef __CAN_H__
 CAN::CAN(CAN_HandleTypeDef *hcan, CAN_FilterTypeDef &filter)
     : Connectivity()
     , hcan(hcan)
     , filter(filter)
 {
+    this->method = Method::CAN;
 }
 
 CAN::~CAN()
@@ -75,3 +74,4 @@ CAN &CAN::operator=(const CAN &other)
 
     return *this;
 }
+#endif

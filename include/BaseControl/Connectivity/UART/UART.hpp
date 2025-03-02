@@ -1,7 +1,10 @@
 #pragma once
 
+#include "main.h"
+
 #include "BaseControl/Connectivity/Connectivity.hpp"
-#include "stm32f4xx.h"
+
+#if defined __USART_H__ || defined __UART_H__
 
 class UART : public Connectivity {
 public:
@@ -38,3 +41,4 @@ private:
 
     dmaOption dma = DISABLE;
 };
+#endif

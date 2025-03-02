@@ -1,8 +1,10 @@
 #pragma once
 
-#include "spi.h"
+#include "main.h"
 
 #include "BaseControl/Connectivity/Connectivity.hpp"
+
+#ifdef __SPI_H__
 
 class SPI : public Connectivity {
 public:
@@ -33,3 +35,4 @@ private:
 
     dmaOption dma = dmaOption::DISABLE;
 };
+#endif

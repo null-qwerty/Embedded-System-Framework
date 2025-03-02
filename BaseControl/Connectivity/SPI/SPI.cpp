@@ -1,10 +1,12 @@
 #include "BaseControl/Connectivity/SPI/SPI.hpp"
-#include "stm32f4xx_hal_spi.h"
+
+#ifdef __SPI_H__
 
 SPI::SPI(SPI_HandleTypeDef *hspi, dmaOption dma)
     : hspi(hspi)
     , dma(dma)
 {
+    this->method = Method::SPI;
 }
 
 SPI::~SPI()
@@ -81,3 +83,4 @@ uint8_t SPI::sendReceiveMessage()
     return HAL_SPI_TransmitReceive(hspi, xSendFrame.data, xReceiveFrame.data,
                                    xReceiveFrame.length, HAL_MAX_DELAY);
 }
+#endif

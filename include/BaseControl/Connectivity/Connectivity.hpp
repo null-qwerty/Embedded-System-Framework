@@ -19,6 +19,15 @@
  */
 class Connectivity {
 public:
+    enum Method {
+        DEFAULT = 0,
+        CAN = 1,
+        FDCAN = 2,
+        UART = 3,
+        SPI = 4,
+        I2C = 5,
+        SERIAL = 9
+    };
     Connectivity() = default;
     ~Connectivity() = default;
 
@@ -66,4 +75,6 @@ public:
     virtual uint8_t sendReceiveMessage() = 0;
 
     Connectivity &operator=(const Connectivity &other);
+
+    Method method = DEFAULT;
 };

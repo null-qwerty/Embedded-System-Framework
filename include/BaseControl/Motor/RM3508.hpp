@@ -5,7 +5,9 @@
 
 class RM3508 : public Motor {
 public:
+#ifdef __CAN_H_
     RM3508(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw);
+#endif
     ~RM3508();
 
     RM3508 &init() final;
@@ -36,4 +38,7 @@ private:
     const uint16_t MAX_CURRENT_DATA = 16384;
 
     float calculateControlData() final;
+
+    RM3508 &encodeCAN();
+    RM3508 &decodeCAN();
 };

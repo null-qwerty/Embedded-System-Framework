@@ -3,8 +3,7 @@
 
 #include "BaseControl/Connectivity/I2C/I2C.hpp"
 
-#include "main.h"
-
+#if defined RSTN_IST8310_GPIO_Port
 IST8310::IST8310(Connectivity &connectivity, uint8_t address)
     : Sensor(connectivity)
     , address(address)
@@ -81,3 +80,4 @@ uint8_t IST8310::readData(uint8_t reg, uint8_t *data, uint8_t lenth)
 
     return connectivity.receiveMessage();
 }
+#endif

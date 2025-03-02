@@ -5,7 +5,9 @@
 
 class DM4310 : public Motor {
 public:
+#ifdef __CAN_H__
     DM4310(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw);
+#endif
     ~DM4310();
 
     DM4310 &init() final;
@@ -24,4 +26,7 @@ private:
     float linearUint2Float(uint16_t x, float x_max, float x_min, uint8_t bits);
 
     float calculateControlData() final;
+
+    DM4310 &encodeCAN(uint8_t *buffer);
+    DM4310 &decodeCAN();
 };
