@@ -1,5 +1,6 @@
 #include "BaseControl/Connectivity/CAN/FDCAN.hpp"
 #include "BaseControl/Connectivity/Connectivity.hpp"
+#include "stm32h7xx_hal_fdcan.h"
 
 #ifdef __FDCAN_H__
 
@@ -19,11 +20,11 @@ FDCAN::~FDCAN()
 
 FDCAN &FDCAN::init()
 {
+    // clang-format off
     while (HAL_FDCAN_ConfigFilter(hcan, &filter) != HAL_OK)
         ;
-    while (HAL_FDCAN_ConfigGlobalFilter(hcan, FDCAN_REJECT, FDCAN_REJECT,
-                                        FDCAN_REJECT_REMOTE,
-                                        FDCAN_REJECT_REMOTE))
+    while (HAL_FDCAN_ConfigGlobalFilter(hcan, DISABLE, DISABLE,
+                                        DISABLE, DISABLE))
         ;
     while (HAL_FDCAN_Start(hcan) != HAL_OK)
         ;
@@ -34,6 +35,7 @@ FDCAN &FDCAN::init()
                                               FDCAN_IT_RX_FIFO1_NEW_MESSAGE,
                                           fdcan_buffer_index))
         ;
+    // clang-format on
 
     return *this;
 }
@@ -55,8 +57,8 @@ uint8_t FDCAN::getState()
 
 uint8_t FDCAN::sendMessage()
 {
-    return HAL_FDCAN_AddMessageToTxBuffer(hcan, &sendFrame.header,
-                                          sendFrame.data, fdcan_buffer_index);
+    return HAL_FDCAN_AddMessageToTxFifoQ(hcan, &sendFrame.header,
+                                         sendFrame.data);
 }
 
 uint8_t FDCAN::receiveMessage()
