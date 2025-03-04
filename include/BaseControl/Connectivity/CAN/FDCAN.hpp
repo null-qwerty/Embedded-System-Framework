@@ -5,6 +5,7 @@
 #ifdef __FDCAN_H__
 
 class FDCAN : public Connectivity {
+public:
     typedef struct xReceptionFrame_s {
         FDCAN_RxHeaderTypeDef header;
         uint8_t data[8];
