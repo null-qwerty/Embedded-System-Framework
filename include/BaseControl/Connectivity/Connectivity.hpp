@@ -78,3 +78,9 @@ public:
 
     Method method = DEFAULT;
 };
+
+#include "CAN/CAN.hpp"
+#include "CAN/FDCAN.hpp"
+#include "I2C/I2C.hpp"
+#include "SPI/SPI.hpp"
+#include "UART/UART.hpp"
