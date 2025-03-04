@@ -1,10 +1,17 @@
 #include "BaseControl/Motor/RM3508.hpp"
-#include "BaseControl/Connectivity/Connectivity.hpp"
 #include "BaseControl/Motor/Motor.hpp"
 
 #ifdef __CAN_H__
 RM3508::RM3508(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw)
     : Motor(can, send_id, receive_id)
+{
+    this->clockwise *= cw;
+}
+#endif
+
+#ifdef __FDCAN_H__
+RM3508::RM3508(FDCAN &fdcan, uint16_t sendid, uint16_t receive_id, int8_t cw)
+    : Motor(fdcan, sendid, receive_id)
 {
     this->clockwise *= cw;
 }
@@ -52,6 +59,8 @@ RM3508 &RM3508::encodeControlMessage()
 {
     if (connectivity.method == Connectivity::Method::CAN) {
         return encodeCAN();
+    } else if (connectivity.method == Connectivity::Method::FDCAN) {
+        return encodeFDCAN();
     }
 
     return *this;
@@ -61,6 +70,8 @@ RM3508 &RM3508::decodeFeedbackMessage()
 {
     if (connectivity.method == Connectivity::Method::CAN) {
         return decodeCAN();
+    } else if (connectivity.method == Connectivity::Method::FDCAN) {
+        return decodeFDCAN();
     }
 
     return *this;
@@ -135,6 +146,49 @@ RM3508 &RM3508::decodeCAN()
     state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
     state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
     state.temprature = data[6];
+#endif
+    return *this;
+}
+
+RM3508 &RM3508::encodeFDCAN()
+{
+#ifdef __FDCAN_H__
+
+    uint16_t index = send_id;
+    FDCAN::xTransmissionFrame_t *sendFrame =
+        (FDCAN::xTransmissionFrame_t *)connectivity.getSendFrame();
+    if (index < 5) {
+        sendFrame->header.Identifier = 0x200;
+    } else {
+        sendFrame->header.Identifier = 0x1ff;
+        index -= 4;
+    }
+
+    /* 帧类型：标准帧 */
+    sendFrame->header.IdType = FDCAN_STANDARD_ID;
+    sendFrame->header.DataLength = 8;
+
+    int16_t data = clockwise * calculateControlData() * ifInitialed();
+    /* 高 8 位在前，低 8 位在后 */
+    sendFrame->data[(index - 1) * 2] = data >> 8;
+    sendFrame->data[(index - 1) * 2 + 1] = data;
+
+#endif
+    return *this;
+}
+
+RM3508 &RM3508::decodeFDCAN()
+{
+#ifdef __FDCAN_H__
+
+    uint8_t *data =
+        ((FDCAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
+    state.position =
+        1.0 * clockwise * (data[0] << 8 | data[1]) / MAX_POISION_DATA * 360.0f;
+    state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
+    state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
+    state.temprature = data[6];
+
 #endif
     return *this;
 }

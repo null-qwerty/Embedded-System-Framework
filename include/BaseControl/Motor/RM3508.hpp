@@ -1,12 +1,15 @@
 #pragma once
 
 #include "Motor.hpp"
-#include "BaseControl/Connectivity/CAN/CAN.hpp"
+#include "BaseControl/Connectivity/Connectivity.hpp"
 
 class RM3508 : public Motor {
 public:
 #ifdef __CAN_H_
     RM3508(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw);
+#endif
+#ifdef __FDCAN_H__
+    RM3508(FDCAN &fdcan, uint16_t sendid, uint16_t receive_id, int8_t cw);
 #endif
     ~RM3508();
 
@@ -41,4 +44,6 @@ private:
 
     RM3508 &encodeCAN();
     RM3508 &decodeCAN();
+    RM3508 &encodeFDCAN();
+    RM3508 &decodeFDCAN();
 };
