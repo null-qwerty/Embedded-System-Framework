@@ -5,12 +5,8 @@
 
 class RM3508 : public Motor {
 public:
-#ifdef __CAN_H_
-    RM3508(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw);
-#endif
-#ifdef __FDCAN_H__
-    RM3508(FDCAN &fdcan, uint16_t sendid, uint16_t receive_id, int8_t cw);
-#endif
+    RM3508(Connectivity &connectivity, uint16_t sendid, uint16_t receive_id,
+           int8_t cw);
     ~RM3508();
 
     RM3508 &init() final;

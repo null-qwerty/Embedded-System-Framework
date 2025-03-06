@@ -1,21 +1,12 @@
 #include "BaseControl/Motor/RM3508.hpp"
 #include "BaseControl/Motor/Motor.hpp"
 
-#ifdef __CAN_H__
-RM3508::RM3508(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw)
-    : Motor(can, send_id, receive_id)
+RM3508::RM3508(Connectivity &connectivity, uint16_t sendid, uint16_t receive_id,
+               int8_t cw)
+    : Motor(connectivity, sendid, receive_id)
 {
     this->clockwise *= cw;
 }
-#endif
-
-#ifdef __FDCAN_H__
-RM3508::RM3508(FDCAN &fdcan, uint16_t sendid, uint16_t receive_id, int8_t cw)
-    : Motor(fdcan, sendid, receive_id)
-{
-    this->clockwise *= cw;
-}
-#endif
 
 RM3508::~RM3508()
 {
