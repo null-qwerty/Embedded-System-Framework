@@ -144,3 +144,7 @@ constexpr int8_t LEFT_MOTOR_CLOCKWISE = -1; // 左边逆时针
 constexpr int8_t RIGHT_MOTOR_CLOCKWISE = 1; // 右边顺时针
 constexpr int8_t FRONT_MOTOR_CLOCKWISE = -1; // 前关节相对左平面逆时针
 constexpr int8_t BACK_MOTOR_CLOCKWISE = 1; // 后关节相对左平面顺时针
+
+#include "DM4310.hpp"
+#include "RM3508.hpp"
+#include "UnitreeA1.hpp"
