@@ -1,4 +1,5 @@
 #include "BaseControl/Connectivity/UART/DBUS.hpp"
+#include "cmsis_os2.h"
 
 DBUS::DBUS(UART_HandleTypeDef *huart, dmaOption dma)
     : UART(huart, dma)
@@ -30,7 +31,10 @@ void DBUS::decodeDBUSMessage()
 
     dbusData.rc.tw = (((int16_t)dbusBuffer[readIndex][16] >> 0) | ((int16_t)dbusBuffer[readIndex][17] << 8)) & 0x07FF;
     // clang-format on
-    ifDataValid();
+    if (!ifDataValid()) {
+        init();
+        osDelay(1);
+    }
 }
 
 DBUS::DBUSData &DBUS::getDBUSData()
