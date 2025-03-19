@@ -1,16 +1,13 @@
 #include "BaseControl/Motor/DM4310.hpp"
-#include "BaseControl/Connectivity/CAN/CAN.hpp"
-#include "BaseControl/Connectivity/Connectivity.hpp"
 
 #include "Math/Math.hpp"
 
-#ifdef __CAN_H__
-DM4310::DM4310(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw)
-    : Motor(can, send_id, receive_id)
+DM4310::DM4310(Connectivity &connectivity, uint16_t send_id,
+               uint16_t receive_id, int8_t cw)
+    : Motor(connectivity, send_id, receive_id)
 {
     this->clockwise *= cw;
 }
-#endif
 DM4310::~DM4310()
 {
 }
@@ -160,7 +157,7 @@ DM4310 &DM4310::encodeCAN(uint8_t *buffer)
     sendFrame->header.RTR = CAN_RTR_DATA;
     /* DLC 8 字节 */
     sendFrame->header.DLC = 8;
-    // 失能报文
+
     sendFrame->data[0] = buffer[0];
     sendFrame->data[1] = buffer[1];
     sendFrame->data[2] = buffer[2];
@@ -195,5 +192,51 @@ DM4310 &DM4310::decodeCAN()
     state.temprature = data[7];
 #endif
 
+    return *this;
+}
+
+DM4310 &DM4310::encodeFDCAN(uint8_t *buffer)
+{
+#ifdef __FDCAN_H__
+    FDCAN::xTransmissionFrame_t *sendFrame =
+        (FDCAN::xTransmissionFrame_t *)connectivity.getSendFrame();
+
+    /* 帧类型：标准帧 */
+    sendFrame->header.IdType = FDCAN_STANDARD_ID;
+    sendFrame->header.DataLength = 8;
+
+    sendFrame->data[0] = buffer[0];
+    sendFrame->data[1] = buffer[1];
+    sendFrame->data[2] = buffer[2];
+    sendFrame->data[3] = buffer[3];
+    sendFrame->data[4] = buffer[4];
+    sendFrame->data[5] = buffer[5];
+    sendFrame->data[6] = buffer[6];
+    sendFrame->data[7] = buffer[7];
+
+#endif
+    return *this;
+}
+
+DM4310 &DM4310::decodeFDCAN()
+{
+#ifdef __FDCAN_H__
+    uint8_t *data =
+        ((FDCAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
+    auto temp_p =
+        clockwise *
+        linearUint2Float((((uint16_t)data[1] << 8) | data[2]), PI, -PI, 16);
+    auto temp_v =
+        clockwise * linearUint2Float(((uint16_t)data[3] << 4) | (data[4] >> 4),
+                                     DM4310_MAX_VEL, -DM4310_MAX_VEL, 12);
+    auto temp_t = clockwise *
+                  linearUint2Float((((uint16_t)data[4] & 0x0f) << 8) | data[5],
+                                   DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
+    state.position = state.position * 0.2 + temp_p * 0.8;
+    state.velocity = state.velocity * 0.2 + temp_v * 0.8;
+    state.toreque = state.toreque * 0.2 + temp_t * 0.8;
+
+    state.temprature = data[7];
+#endif
     return *this;
 }

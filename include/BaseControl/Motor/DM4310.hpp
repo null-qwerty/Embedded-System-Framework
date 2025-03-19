@@ -1,13 +1,11 @@
 #pragma once
 
 #include "Motor.hpp"
-#include "BaseControl/Connectivity/CAN/CAN.hpp"
 
 class DM4310 : public Motor {
 public:
-#ifdef __CAN_H__
-    DM4310(CAN &can, uint16_t send_id, uint16_t receive_id, int8_t cw);
-#endif
+    DM4310(Connectivity &connectivity, uint16_t send_id, uint16_t receive_id,
+           int8_t cw);
     ~DM4310();
 
     DM4310 &init() final;
@@ -29,4 +27,6 @@ private:
 
     DM4310 &encodeCAN(uint8_t *buffer);
     DM4310 &decodeCAN();
+    DM4310 &encodeFDCAN(uint8_t *buffer);
+    DM4310 &decodeFDCAN();
 };
