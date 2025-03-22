@@ -67,8 +67,9 @@ uint8_t UART::receiveMessage()
         return HAL_BUSY;
     }
     xReceiveFrame.readIndex = 1 - xReceiveFrame.readIndex;
-    return HAL_UART_Receive(huart, xReceiveFrame.data[xReceiveFrame.readIndex],
-                            xReceiveFrame.length, 20);
+    return HAL_UART_Receive_IT(huart,
+                               xReceiveFrame.data[1 - xReceiveFrame.readIndex],
+                               xReceiveFrame.length);
 }
 
 uint8_t UART::sendReceiveMessage()
