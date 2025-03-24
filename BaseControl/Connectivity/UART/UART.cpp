@@ -50,7 +50,7 @@ uint8_t UART::sendMessage()
     }
     xSendFrame.readIndex = 1 - xSendFrame.readIndex;
     return HAL_UART_Transmit(huart, xSendFrame.data[xSendFrame.readIndex],
-                             xSendFrame.length, 20);
+                             xSendFrame.length, 5);
 }
 
 uint8_t UART::receiveMessage()
@@ -67,9 +67,9 @@ uint8_t UART::receiveMessage()
         return HAL_BUSY;
     }
     xReceiveFrame.readIndex = 1 - xReceiveFrame.readIndex;
-    return HAL_UART_Receive_IT(huart,
-                               xReceiveFrame.data[1 - xReceiveFrame.readIndex],
-                               xReceiveFrame.length);
+    return HAL_UART_Receive(huart,
+                            xReceiveFrame.data[1 - xReceiveFrame.readIndex],
+                            xReceiveFrame.length, 5);
 }
 
 uint8_t UART::sendReceiveMessage()
