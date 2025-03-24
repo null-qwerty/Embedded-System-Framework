@@ -21,10 +21,4 @@ private:
     float calculateControlData() final;
 
     uint32_t crc32_core(uint32_t *ptr, uint32_t len);
-
-    sendData sendBuffer[2];
-    receiveData receiveBuffer[2];
-
-    uint8_t sendReadIndex = 0;
-    uint8_t receiveReadIndex = 0;
 };

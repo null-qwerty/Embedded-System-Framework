@@ -1,6 +1,5 @@
 #include "BaseControl/Motor/UnitreeA1.hpp"
 #include "Math/Math.hpp"
-#include <string.h>
 
 UnitreeA1::UnitreeA1(Connectivity &connectivity, uint16_t send_id,
                      uint16_t receive_id, int8_t cw)
@@ -25,18 +24,14 @@ UnitreeA1 &UnitreeA1::init()
     state.toreque = 0;
     state.temprature = 0;
 
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->readIndex = 1;
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->data[0] =
-        (uint8_t *)(&sendBuffer[0]);
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->data[1] =
-        (uint8_t *)(&sendBuffer[1]);
+    auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
+    auto readindex = sendframe->readIndex;
+    auto sendBuffer = (sendData *)(sendframe->data[readindex]);
 
-    memset(sendBuffer, 0, 2 * sizeof(sendData));
-
-    sendBuffer[0].header.start = 0xeefe;
-    sendBuffer[0].header.id = send_id;
-    sendBuffer[0].data.mode = 10;
-    sendBuffer[0].crc = crc32_core((uint32_t *)(sendBuffer), 7);
+    sendBuffer->header.start = 0xeefe;
+    sendBuffer->header.id = send_id;
+    sendBuffer->data.mode = 10;
+    sendBuffer->crc = crc32_core((uint32_t *)(sendBuffer), 7);
 
     ifEnable = 1;
 
@@ -47,18 +42,14 @@ UnitreeA1 &UnitreeA1::deInit()
 {
     ifEnable = 0;
 
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->readIndex = 1;
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->data[0] =
-        (uint8_t *)(&sendBuffer[0]);
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->data[1] =
-        (uint8_t *)(&sendBuffer[1]);
+    auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
+    auto readindex = sendframe->readIndex;
+    auto sendBuffer = (sendData *)(sendframe->data[readindex]);
 
-    memset(sendBuffer, 0, 2 * sizeof(sendData));
-
-    sendBuffer[0].header.start = 0xeefe;
-    sendBuffer[0].header.id = send_id;
-    sendBuffer[0].data.mode = 0;
-    sendBuffer[0].crc = crc32_core((uint32_t *)(sendBuffer), 7);
+    sendBuffer->header.start = 0xeefe;
+    sendBuffer->header.id = send_id;
+    sendBuffer->data.mode = 10;
+    sendBuffer->crc = crc32_core((uint32_t *)(sendBuffer), 7);
 
     return *this;
 }
@@ -67,47 +58,32 @@ UnitreeA1 &UnitreeA1::encodeControlMessage()
 {
     int16_t data = calculateControlData();
 
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->readIndex =
-        sendReadIndex;
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->data[0] =
-        (uint8_t *)(&sendBuffer[0]);
-    ((UART::xUARTFrame_t *)(connectivity.getSendFrame()))->data[1] =
-        (uint8_t *)(&sendBuffer[1]);
+    auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
+    auto readindex = sendframe->readIndex;
+    auto sendBuffer = (sendData *)(sendframe->data[readindex]);
 
-    memset(&sendBuffer[sendReadIndex], 0, sizeof(sendData));
-
-    sendBuffer[sendReadIndex].header.start = 0xeefe;
-    sendBuffer[sendReadIndex].header.id = send_id;
-    sendBuffer[sendReadIndex].data.mode = 10;
-    sendBuffer[sendReadIndex].data.T = data * 256;
-    sendBuffer[sendReadIndex].crc = crc32_core((uint32_t *)(sendBuffer), 7);
-
-    sendReadIndex = 1 - sendReadIndex;
-
-    ((UART::xUARTFrame_t *)(connectivity.getReceiveFrame()))->readIndex =
-        receiveReadIndex;
-    ((UART::xUARTFrame_t *)(connectivity.getReceiveFrame()))->data[0] =
-        (uint8_t *)(&receiveBuffer[0]);
-    ((UART::xUARTFrame_t *)(connectivity.getReceiveFrame()))->data[1] =
-        (uint8_t *)(&receiveBuffer[1]);
+    sendBuffer->header.start = 0xeefe;
+    sendBuffer->header.id = send_id;
+    sendBuffer->data.mode = 10;
+    sendBuffer->data.T = data * 256;
+    sendBuffer->crc = crc32_core((uint32_t *)(sendBuffer), 7);
 
     return *this;
 }
 
 UnitreeA1 &UnitreeA1::decodeFeedbackMessage()
 {
-    if (receiveBuffer[receiveReadIndex].header.start == 0xeefe &&
-        receiveBuffer[receiveReadIndex].header.id == receive_id &&
-        receiveBuffer[receiveReadIndex].crc ==
-            crc32_core((uint32_t *)(receiveBuffer), 18)) {
-        state.position =
-            receiveBuffer[receiveReadIndex].data.Pos * 2 * PI / 16384.;
-        state.velocity = receiveBuffer[receiveReadIndex].data.W / 128.;
-        state.toreque = receiveBuffer[receiveReadIndex].data.T / 256.;
-        state.temprature = receiveBuffer[receiveReadIndex].data.Temp;
+    auto receiveframe = (UART::xUARTFrame_t *)(connectivity.getReceiveFrame());
+    auto readindex = receiveframe->readIndex;
+    auto receiveBuffer = (receiveData *)(receiveframe->data[readindex]);
+    if (receiveBuffer->header.start == 0xeefe &&
+        receiveBuffer->header.id == receive_id &&
+        receiveBuffer->crc == crc32_core((uint32_t *)(receiveBuffer), 18)) {
+        state.position = receiveBuffer->data.Pos * 2 * PI / 16384.;
+        state.velocity = receiveBuffer->data.W / 128.;
+        state.toreque = receiveBuffer->data.T / 256.;
+        state.temprature = receiveBuffer->data.Temp;
     }
-
-    receiveReadIndex = 1 - receiveReadIndex;
 
     return *this;
 }
