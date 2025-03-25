@@ -1,4 +1,5 @@
 #include "BaseControl/Connectivity/UART/UART.hpp"
+#include "stm32h7xx_hal_uart_ex.h"
 
 #if defined __USART_H__ || defined __UART_H__
 
@@ -50,7 +51,7 @@ uint8_t UART::sendMessage()
     }
     xSendFrame.readIndex = 1 - xSendFrame.readIndex;
     return HAL_UART_Transmit(huart, xSendFrame.data[xSendFrame.readIndex],
-                             xSendFrame.length, 5);
+                             xSendFrame.length, 20);
 }
 
 uint8_t UART::receiveMessage()
@@ -59,7 +60,7 @@ uint8_t UART::receiveMessage()
         if (huart->hdmarx->State == HAL_DMA_STATE_READY) {
             xReceiveFrame.readIndex = 1 - xReceiveFrame.readIndex;
             // huart->hdmarx->State = HAL_DMA_STATE_BUSY;
-            HAL_UART_Receive_DMA(
+            HAL_UARTEx_ReceiveToIdle_DMA(
                 huart, xReceiveFrame.data[1 - xReceiveFrame.readIndex],
                 xReceiveFrame.length);
             return HAL_OK;
@@ -69,7 +70,7 @@ uint8_t UART::receiveMessage()
     xReceiveFrame.readIndex = 1 - xReceiveFrame.readIndex;
     return HAL_UART_Receive(huart,
                             xReceiveFrame.data[1 - xReceiveFrame.readIndex],
-                            xReceiveFrame.length, 5);
+                            xReceiveFrame.length, 20);
 }
 
 uint8_t UART::sendReceiveMessage()
