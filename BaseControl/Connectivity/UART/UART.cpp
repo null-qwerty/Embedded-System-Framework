@@ -60,6 +60,8 @@ uint8_t UART::receiveMessage()
         if (huart->hdmarx->State == HAL_DMA_STATE_READY) {
             xReceiveFrame.readIndex = 1 - xReceiveFrame.readIndex;
             // huart->hdmarx->State = HAL_DMA_STATE_BUSY;
+            // 新版 HAL 库自带的函数，接收完成后自动进入空闲中断
+            // 中断函数为 HAL_UARTEx_RxEventCallback，这是个弱定义的函数
             HAL_UARTEx_ReceiveToIdle_DMA(
                 huart, xReceiveFrame.data[1 - xReceiveFrame.readIndex],
                 xReceiveFrame.length);
