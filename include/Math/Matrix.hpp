@@ -2,6 +2,7 @@
 
 #include "arm_math.h"
 #include "matrix_functions.h"
+#include "statistics_functions.h"
 
 template <int Rows, int Cols> class Matrix {
 public:
@@ -44,6 +45,7 @@ public:
 
     Matrix<Rows, Cols> transpose() const;
     Matrix<Rows, Cols> inverse() const;
+    Matrix<Rows, Cols> exp() const;
 
     static Matrix<Rows, Cols> identity();
     static Matrix<Rows, Cols> zero();
@@ -243,6 +245,17 @@ Matrix<Rows, Cols> Matrix<Rows, Cols>::inverse() const
 {
     Matrix<Rows, Cols> result;
     arm_mat_inverse_f32(&matrix, &result.matrix);
+    return result;
+}
+
+template <int Rows, int Cols> Matrix<Rows, Cols> Matrix<Rows, Cols>::exp() const
+{
+    Matrix<Rows, Cols> result;
+    for (int i = 0; i < Rows; i++) {
+        for (int j = 0; j < Cols; j++) {
+            result(i, j) = pow(2.718281828459045f, this->data[i * Cols + j]);
+        }
+    }
     return result;
 }
 
