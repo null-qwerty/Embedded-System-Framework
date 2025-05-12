@@ -38,6 +38,7 @@ public:
 
     Matrix<InputDim, StateDim> &getK();
     Vector<InputDim> getU(const Vector<StateDim> &x);
+    lqrController<StateDim, InputDim> &calculateK();
 
 private:
     // LQR param
@@ -48,8 +49,6 @@ private:
 
     Matrix<InputDim, StateDim> K;
     Matrix<StateDim, StateDim> P;
-
-    lqrController<StateDim, InputDim> &calculateK();
 };
 
 template <int StateDim, int InputDim>
