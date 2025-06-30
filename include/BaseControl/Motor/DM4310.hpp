@@ -26,7 +26,7 @@ private:
     float calculateControlData() final;
 
     DM4310 &encodeCAN(uint8_t *buffer);
-    DM4310 &decodeCAN();
+    DM4310 &decodeCAN(uint8_t *data);
     DM4310 &encodeFDCAN(uint8_t *buffer);
-    DM4310 &decodeFDCAN();
+    DM4310 &decodeFDCAN(uint8_t *data);
 };

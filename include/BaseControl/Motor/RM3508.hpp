@@ -38,8 +38,8 @@ private:
 
     float calculateControlData() final;
 
-    RM3508 &encodeCAN();
-    RM3508 &decodeCAN();
-    RM3508 &encodeFDCAN();
-    RM3508 &decodeFDCAN();
+    RM3508 &encodeCanData(uint16_t data);
+    uint8_t *getCanData();
+    RM3508 &encodeFdcanData(uint16_t data);
+    uint8_t *getFdcanData();
 };

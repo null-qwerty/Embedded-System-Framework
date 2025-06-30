@@ -37,7 +37,11 @@ DM4310 &DM4310::init()
     buffer[6] = 0xff;
     buffer[7] = 0xfc;
 
-    encodeCAN(buffer);
+    if (connectivity.method == Connectivity::Method::CAN) {
+        encodeCAN(buffer);
+    } else if (connectivity.method == Connectivity::Method::FDCAN) {
+        encodeFDCAN(buffer);
+    }
 
     connectivity.sendMessage();
 
@@ -58,7 +62,11 @@ DM4310 &DM4310::deInit()
     buffer[6] = 0xff;
     buffer[7] = 0xfd;
 
-    encodeCAN(buffer);
+    if (connectivity.method == Connectivity::Method::CAN) {
+        encodeCAN(buffer);
+    } else if (connectivity.method == Connectivity::Method::FDCAN) {
+        encodeFDCAN(buffer);
+    }
 
     connectivity.sendMessage();
 
@@ -82,6 +90,8 @@ DM4310 &DM4310::encodeControlMessage()
 
     if (connectivity.method == Connectivity::Method::CAN) {
         return encodeCAN(buffer);
+    } else if (connectivity.method == Connectivity::Method::FDCAN) {
+        return encodeFDCAN(buffer);
     }
 
     return *this;
@@ -89,9 +99,27 @@ DM4310 &DM4310::encodeControlMessage()
 
 DM4310 &DM4310::decodeFeedbackMessage()
 {
+    uint8_t *data = nullptr;
     if (connectivity.method == Connectivity::Method::CAN) {
-        return decodeCAN();
+        decodeCAN(data);
+    } else if (connectivity.method == Connectivity::Method::FDCAN) {
+        decodeFDCAN(data);
     }
+
+    auto temp_p =
+        clockwise *
+        linearUint2Float((((uint16_t)data[1] << 8) | data[2]), PI, -PI, 16);
+    auto temp_v =
+        clockwise * linearUint2Float(((uint16_t)data[3] << 4) | (data[4] >> 4),
+                                     DM4310_MAX_VEL, -DM4310_MAX_VEL, 12);
+    auto temp_t = clockwise *
+                  linearUint2Float((((uint16_t)data[4] & 0x0f) << 8) | data[5],
+                                   DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
+    state.position = state.position * 0.2 + temp_p * 0.8;
+    state.velocity = state.velocity * 0.2 + temp_v * 0.8;
+    state.toreque = state.toreque * 0.2 + temp_t * 0.8;
+
+    state.temprature = data[7];
 
     return *this;
 }
@@ -167,25 +195,11 @@ DM4310 &DM4310::encodeCAN(uint8_t *buffer)
     return *this;
 }
 
-DM4310 &DM4310::decodeCAN()
+DM4310 &DM4310::decodeCAN(uint8_t *data)
 {
 #ifdef __CAN_H__
-    uint8_t *data =
-        ((CAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
-    auto temp_p =
-        clockwise *
-        linearUint2Float((((uint16_t)data[1] << 8) | data[2]), PI, -PI, 16);
-    auto temp_v =
-        clockwise * linearUint2Float(((uint16_t)data[3] << 4) | (data[4] >> 4),
-                                     DM4310_MAX_VEL, -DM4310_MAX_VEL, 12);
-    auto temp_t = clockwise *
-                  linearUint2Float((((uint16_t)data[4] & 0x0f) << 8) | data[5],
-                                   DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
-    state.position = state.position * 0.2 + temp_p * 0.8;
-    state.velocity = state.velocity * 0.2 + temp_v * 0.8;
-    state.toreque = state.toreque * 0.2 + temp_t * 0.8;
+    data = ((CAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
 
-    state.temprature = data[7];
 #endif
 
     return *this;
@@ -214,25 +228,10 @@ DM4310 &DM4310::encodeFDCAN(uint8_t *buffer)
     return *this;
 }
 
-DM4310 &DM4310::decodeFDCAN()
+DM4310 &DM4310::decodeFDCAN(uint8_t *data)
 {
 #ifdef __FDCAN_H__
-    uint8_t *data =
-        ((FDCAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
-    auto temp_p =
-        clockwise *
-        linearUint2Float((((uint16_t)data[1] << 8) | data[2]), PI, -PI, 16);
-    auto temp_v =
-        clockwise * linearUint2Float(((uint16_t)data[3] << 4) | (data[4] >> 4),
-                                     DM4310_MAX_VEL, -DM4310_MAX_VEL, 12);
-    auto temp_t = clockwise *
-                  linearUint2Float((((uint16_t)data[4] & 0x0f) << 8) | data[5],
-                                   DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
-    state.position = state.position * 0.2 + temp_p * 0.8;
-    state.velocity = state.velocity * 0.2 + temp_v * 0.8;
-    state.toreque = state.toreque * 0.2 + temp_t * 0.8;
-
-    state.temprature = data[7];
+    data = ((FDCAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
 #endif
     return *this;
 }

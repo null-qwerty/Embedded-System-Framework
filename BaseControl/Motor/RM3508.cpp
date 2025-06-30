@@ -49,10 +49,11 @@ RM3508 &RM3508::deInit()
 
 RM3508 &RM3508::encodeControlMessage()
 {
+    int16_t data = clockwise * calculateControlData() * ifInitialed();
     if (connectivity.method == Connectivity::Method::CAN) {
-        return encodeCAN();
+        return encodeCanData(data);
     } else if (connectivity.method == Connectivity::Method::FDCAN) {
-        return encodeFDCAN();
+        return encodeFdcanData(data);
     }
 
     return *this;
@@ -60,11 +61,18 @@ RM3508 &RM3508::encodeControlMessage()
 
 RM3508 &RM3508::decodeFeedbackMessage()
 {
+    uint8_t *data = nullptr;
     if (connectivity.method == Connectivity::Method::CAN) {
-        return decodeCAN();
+        data = getCanData();
     } else if (connectivity.method == Connectivity::Method::FDCAN) {
-        return decodeFDCAN();
+        data = getFdcanData();
     }
+
+    state.position =
+        1.0 * clockwise * (data[0] << 8 | data[1]) / MAX_POISION_DATA * 360.0f;
+    state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
+    state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
+    state.temprature = data[6];
 
     return *this;
 }
@@ -96,7 +104,7 @@ float RM3508::calculateControlData()
     return refState.toreque;
 }
 
-RM3508 &RM3508::encodeCAN()
+RM3508 &RM3508::encodeCanData(uint16_t data)
 {
 #ifdef __CAN_H__
     /* 设置 CAN 标准帧标识符 */
@@ -119,7 +127,6 @@ RM3508 &RM3508::encodeCAN()
     sendFrame->header.DLC = 8;
 
     /* 帧格式 Data */
-    int16_t data = clockwise * calculateControlData() * ifInitialed();
     /* 高 8 位在前，低 8 位在后 */
     sendFrame->data[(index - 1) * 2] = data >> 8;
     sendFrame->data[(index - 1) * 2 + 1] = data;
@@ -127,22 +134,15 @@ RM3508 &RM3508::encodeCAN()
     return *this;
 }
 
-RM3508 &RM3508::decodeCAN()
+uint8_t *RM3508::getCanData()
 {
 #ifdef __CAN_H__
-    uint8_t *data =
-        ((CAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
-
-    state.position =
-        1.0 * clockwise * (data[0] << 8 | data[1]) / MAX_POISION_DATA * 360.0f;
-    state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
-    state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
-    state.temprature = data[6];
+    return ((CAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
 #endif
-    return *this;
+    return nullptr;
 }
 
-RM3508 &RM3508::encodeFDCAN()
+RM3508 &RM3508::encodeFdcanData(uint16_t data)
 {
 #ifdef __FDCAN_H__
 
@@ -160,7 +160,6 @@ RM3508 &RM3508::encodeFDCAN()
     sendFrame->header.IdType = FDCAN_STANDARD_ID;
     sendFrame->header.DataLength = 8;
 
-    int16_t data = clockwise * calculateControlData() * ifInitialed();
     /* 高 8 位在前，低 8 位在后 */
     sendFrame->data[(index - 1) * 2] = data >> 8;
     sendFrame->data[(index - 1) * 2 + 1] = data;
@@ -169,18 +168,10 @@ RM3508 &RM3508::encodeFDCAN()
     return *this;
 }
 
-RM3508 &RM3508::decodeFDCAN()
+uint8_t *RM3508::getFdcanData()
 {
 #ifdef __FDCAN_H__
-
-    uint8_t *data =
-        ((FDCAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
-    state.position =
-        1.0 * clockwise * (data[0] << 8 | data[1]) / MAX_POISION_DATA * 360.0f;
-    state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
-    state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
-    state.temprature = data[6];
-
+    return ((FDCAN::xReceptionFrame_t *)(connectivity.getReceiveFrame()))->data;
 #endif
-    return *this;
+    return nullptr;
 }
