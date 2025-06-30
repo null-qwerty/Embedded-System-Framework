@@ -3,10 +3,11 @@
 #include "Math/Math.hpp"
 
 DM4310::DM4310(Connectivity &connectivity, uint16_t send_id,
-               uint16_t receive_id, int8_t cw)
+               uint16_t receive_id, int8_t cw, float radio)
     : Motor(connectivity, send_id, receive_id)
 {
     this->clockwise *= cw;
+    this->radio = radio;
 }
 DM4310::~DM4310()
 {
@@ -119,11 +120,6 @@ float DM4310::calculateControlData()
     else if (getTargetState().position - state.position < -180.0f)
         getTargetState().position += 360.0f;
 
-    // TODO 设置限位，后续放到外部
-    if (getTargetState().position < 0.02)
-        getTargetState().position = 0.02;
-    if (getTargetState().position > 1.2)
-        getTargetState().position = 1.2;
     // 计算控制量
     refState.position = getTargetState().position;
     if (angleLoop != nullptr) {

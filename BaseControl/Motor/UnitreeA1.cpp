@@ -2,10 +2,11 @@
 #include "Math/Math.hpp"
 
 UnitreeA1::UnitreeA1(Connectivity &connectivity, uint16_t send_id,
-                     uint16_t receive_id, int8_t cw)
+                     uint16_t receive_id, int8_t cw, float radio)
     : Motor(connectivity, send_id, receive_id)
 {
     this->clockwise *= cw;
+    this->radio = radio;
 }
 
 UnitreeA1::~UnitreeA1()

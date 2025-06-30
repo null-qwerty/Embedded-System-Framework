@@ -5,7 +5,7 @@
 class DM4310 : public Motor {
 public:
     DM4310(Connectivity &connectivity, uint16_t send_id, uint16_t receive_id,
-           int8_t cw);
+           int8_t cw, float radio = 1.0f);
     ~DM4310();
 
     DM4310 &init() final;

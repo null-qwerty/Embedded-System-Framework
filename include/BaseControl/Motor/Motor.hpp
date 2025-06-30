@@ -131,6 +131,7 @@ protected:
     Connectivity &connectivity; ///< 通信接口，定义为引用，避免拷贝
 
     int8_t clockwise = 1; ///< 旋转方向
+    float radio = 1.0f; ///< 传动比
 
     bool initialed = false;
 

@@ -2,10 +2,11 @@
 #include "BaseControl/Motor/Motor.hpp"
 
 RM3508::RM3508(Connectivity &connectivity, uint16_t sendid, uint16_t receive_id,
-               int8_t cw)
+               int8_t cw, float radio)
     : Motor(connectivity, sendid, receive_id)
 {
     this->clockwise *= cw;
+    this->radio = radio;
 }
 
 RM3508::~RM3508()
