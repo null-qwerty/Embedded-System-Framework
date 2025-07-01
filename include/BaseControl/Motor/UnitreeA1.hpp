@@ -6,7 +6,7 @@
 class UnitreeA1 : public Motor {
 public:
     UnitreeA1(Connectivity &connectivity, uint16_t send_id, uint16_t receive_id,
-              int8_t cw, float radio = 9.1f);
+              int8_t cw, float ratio = 9.1f);
     ~UnitreeA1();
 
     UnitreeA1 &init() final;

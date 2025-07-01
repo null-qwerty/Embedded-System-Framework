@@ -3,11 +3,11 @@
 #include "Math/Math.hpp"
 
 DM4310::DM4310(Connectivity &connectivity, uint16_t send_id,
-               uint16_t receive_id, int8_t cw, float radio)
+               uint16_t receive_id, int8_t cw, float ratio)
     : Motor(connectivity, send_id, receive_id)
 {
     this->clockwise *= cw;
-    this->radio = radio;
+    this->ratio = ratio;
 }
 DM4310::~DM4310()
 {
@@ -76,7 +76,7 @@ DM4310 &DM4310::deInit()
 DM4310 &DM4310::encodeControlMessage()
 {
     uint8_t buffer[8];
-    uint16_t data = linearFloat2Uint(clockwise * calculateControlData() / radio,
+    uint16_t data = linearFloat2Uint(clockwise * calculateControlData() / ratio,
                                      DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
 
     buffer[0] = 0x0000;
@@ -117,9 +117,9 @@ DM4310 &DM4310::decodeFeedbackMessage()
                                     DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
 
     // 计算输出轴位置/速度/力矩
-    state.position /= radio; // 位置和速度都除以齿轮比
-    state.velocity /= radio;
-    state.toreque *= radio; // 力矩乘以齿轮比
+    state.position /= ratio; // 位置和速度都除以齿轮比
+    state.velocity /= ratio;
+    state.toreque *= ratio; // 力矩乘以齿轮比
 
     state.temprature = data[7];
 

@@ -6,7 +6,7 @@
 class RM3508 : public Motor {
 public:
     RM3508(Connectivity &connectivity, uint16_t sendid, uint16_t receive_id,
-           int8_t cw, float radio = 3591.0f / 187.0f);
+           int8_t cw, float ratio = 3591.0f / 187.0f);
     ~RM3508();
 
     RM3508 &init() final;

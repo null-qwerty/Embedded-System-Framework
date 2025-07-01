@@ -2,11 +2,11 @@
 #include "Math/Math.hpp"
 
 UnitreeA1::UnitreeA1(Connectivity &connectivity, uint16_t send_id,
-                     uint16_t receive_id, int8_t cw, float radio)
+                     uint16_t receive_id, int8_t cw, float ratio)
     : Motor(connectivity, send_id, receive_id)
 {
     this->clockwise *= cw;
-    this->radio = radio;
+    this->ratio = ratio;
 }
 
 UnitreeA1::~UnitreeA1()
@@ -57,7 +57,7 @@ UnitreeA1 &UnitreeA1::deInit()
 
 UnitreeA1 &UnitreeA1::encodeControlMessage()
 {
-    int16_t data = clockwise * calculateControlData() / radio;
+    int16_t data = clockwise * calculateControlData() / ratio;
 
     auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
     auto readindex = sendframe->readIndex;
@@ -87,9 +87,9 @@ UnitreeA1 &UnitreeA1::decodeFeedbackMessage()
         state.temprature = receiveBuffer->data.Temp;
 
         // 计算输出轴位置/速度/力矩
-        state.position /= radio; // 位置和速度都除以齿轮比
-        state.velocity /= radio;
-        state.toreque *= radio; // 力矩乘以齿轮比
+        state.position /= ratio; // 位置和速度都除以齿轮比
+        state.velocity /= ratio;
+        state.toreque *= ratio; // 力矩乘以齿轮比
     }
 
     return *this;

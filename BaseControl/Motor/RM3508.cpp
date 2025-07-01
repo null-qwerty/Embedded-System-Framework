@@ -2,11 +2,11 @@
 #include "BaseControl/Motor/Motor.hpp"
 
 RM3508::RM3508(Connectivity &connectivity, uint16_t sendid, uint16_t receive_id,
-               int8_t cw, float radio)
+               int8_t cw, float ratio)
     : Motor(connectivity, sendid, receive_id)
 {
     this->clockwise *= cw;
-    this->radio = radio;
+    this->ratio = ratio;
 }
 
 RM3508::~RM3508()
@@ -49,7 +49,7 @@ RM3508 &RM3508::deInit()
 
 RM3508 &RM3508::encodeControlMessage()
 {
-    int16_t data = clockwise * calculateControlData() * ifInitialed() / radio;
+    int16_t data = clockwise * calculateControlData() * ifInitialed() / ratio;
     if (connectivity.method == Connectivity::Method::CAN) {
         return encodeCanData(data);
     } else if (connectivity.method == Connectivity::Method::FDCAN) {
@@ -74,9 +74,9 @@ RM3508 &RM3508::decodeFeedbackMessage()
     state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
     state.temprature = data[6];
     // 计算输出轴位置/速度/力矩，注意由于没有计算转子圈数，位置不是输出轴的实际位置
-    state.position /= radio; // 位置和速度都除以齿轮比
-    state.velocity /= radio;
-    state.toreque *= radio; // 力矩乘以齿轮比
+    state.position /= ratio; // 位置和速度都除以齿轮比
+    state.velocity /= ratio;
+    state.toreque *= ratio; // 力矩乘以齿轮比
 
     return *this;
 }
