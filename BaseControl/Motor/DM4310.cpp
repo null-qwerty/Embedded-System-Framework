@@ -76,7 +76,7 @@ DM4310 &DM4310::deInit()
 DM4310 &DM4310::encodeControlMessage()
 {
     uint8_t buffer[8];
-    uint16_t data = linearFloat2Uint(clockwise * calculateControlData(),
+    uint16_t data = linearFloat2Uint(clockwise * calculateControlData() / radio,
                                      DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
 
     buffer[0] = 0x0000;
@@ -106,18 +106,20 @@ DM4310 &DM4310::decodeFeedbackMessage()
         decodeFDCAN(data);
     }
 
-    auto temp_p =
+    state.position =
         clockwise *
         linearUint2Float((((uint16_t)data[1] << 8) | data[2]), PI, -PI, 16);
-    auto temp_v =
+    state.velocity =
         clockwise * linearUint2Float(((uint16_t)data[3] << 4) | (data[4] >> 4),
                                      DM4310_MAX_VEL, -DM4310_MAX_VEL, 12);
-    auto temp_t = clockwise *
-                  linearUint2Float((((uint16_t)data[4] & 0x0f) << 8) | data[5],
-                                   DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
-    state.position = state.position * 0.2 + temp_p * 0.8;
-    state.velocity = state.velocity * 0.2 + temp_v * 0.8;
-    state.toreque = state.toreque * 0.2 + temp_t * 0.8;
+    state.toreque = clockwise * linearUint2Float(
+                                    (((uint16_t)data[4] & 0x0f) << 8) | data[5],
+                                    DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
+
+    // 计算输出轴位置/速度/力矩
+    state.position /= radio; // 位置和速度都除以齿轮比
+    state.velocity /= radio;
+    state.toreque *= radio; // 力矩乘以齿轮比
 
     state.temprature = data[7];
 
@@ -150,19 +152,15 @@ float DM4310::calculateControlData()
 
     // 计算控制量
     refState.position = getTargetState().position;
+    refState.velocity = getTargetState().velocity;
+    refState.toreque = getTargetState().toreque;
     if (angleLoop != nullptr) {
-        refState.velocity =
-            getTargetState().velocity +
+        refState.velocity +=
             angleLoop->calculate(refState.position, state.position);
-    } else {
-        refState.velocity = getTargetState().velocity;
     }
     if (speedLoop != nullptr) {
-        refState.toreque =
-            getTargetState().toreque +
+        refState.toreque +=
             speedLoop->calculate(refState.velocity, state.velocity);
-    } else {
-        refState.toreque = getTargetState().toreque;
     }
 
     return refState.toreque;

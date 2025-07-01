@@ -49,7 +49,7 @@ RM3508 &RM3508::deInit()
 
 RM3508 &RM3508::encodeControlMessage()
 {
-    int16_t data = clockwise * calculateControlData() * ifInitialed();
+    int16_t data = clockwise * calculateControlData() * ifInitialed() / radio;
     if (connectivity.method == Connectivity::Method::CAN) {
         return encodeCanData(data);
     } else if (connectivity.method == Connectivity::Method::FDCAN) {
@@ -73,6 +73,10 @@ RM3508 &RM3508::decodeFeedbackMessage()
     state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
     state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
     state.temprature = data[6];
+    // 计算输出轴位置/速度/力矩，注意由于没有计算转子圈数，位置不是输出轴的实际位置
+    state.position /= radio; // 位置和速度都除以齿轮比
+    state.velocity /= radio;
+    state.toreque *= radio; // 力矩乘以齿轮比
 
     return *this;
 }
@@ -86,19 +90,15 @@ float RM3508::calculateControlData()
         getTargetState().position += 360.0f;
     // 计算控制量
     refState.position = getTargetState().position;
+    refState.velocity = getTargetState().velocity;
+    refState.toreque = getTargetState().toreque;
     if (angleLoop != nullptr) {
-        refState.velocity =
-            getTargetState().velocity +
+        refState.velocity +=
             angleLoop->calculate(refState.position, state.position);
-    } else {
-        refState.velocity = getTargetState().velocity;
     }
     if (speedLoop != nullptr) {
-        refState.toreque =
-            getTargetState().toreque +
+        refState.toreque +=
             speedLoop->calculate(refState.velocity, state.velocity);
-    } else {
-        refState.toreque = getTargetState().toreque;
     }
 
     return refState.toreque;

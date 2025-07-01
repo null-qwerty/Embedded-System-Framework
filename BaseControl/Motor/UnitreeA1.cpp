@@ -57,7 +57,7 @@ UnitreeA1 &UnitreeA1::deInit()
 
 UnitreeA1 &UnitreeA1::encodeControlMessage()
 {
-    int16_t data = calculateControlData();
+    int16_t data = clockwise * calculateControlData() / radio;
 
     auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
     auto readindex = sendframe->readIndex;
@@ -80,10 +80,16 @@ UnitreeA1 &UnitreeA1::decodeFeedbackMessage()
     if (receiveBuffer->header.start == 0xeefe &&
         receiveBuffer->header.id == receive_id &&
         receiveBuffer->crc == crc32_core((uint32_t *)(receiveBuffer), 18)) {
-        state.position = receiveBuffer->data.Pos * 2 * PI / 16384.;
-        state.velocity = receiveBuffer->data.W / 128.;
-        state.toreque = receiveBuffer->data.T / 256.;
+        state.position =
+            1.0 * clockwise * receiveBuffer->data.Pos * 2 * PI / 16384.;
+        state.velocity = 1.0 * clockwise * receiveBuffer->data.W / 128.;
+        state.toreque = 1.0 * clockwise * receiveBuffer->data.T / 256.;
         state.temprature = receiveBuffer->data.Temp;
+
+        // 计算输出轴位置/速度/力矩
+        state.position /= radio; // 位置和速度都除以齿轮比
+        state.velocity /= radio;
+        state.toreque *= radio; // 力矩乘以齿轮比
     }
 
     return *this;
@@ -98,19 +104,15 @@ float UnitreeA1::calculateControlData()
         getTargetState().position += 360.0f;
     // 计算控制量
     refState.position = getTargetState().position;
+    refState.velocity = getTargetState().velocity;
+    refState.toreque = getTargetState().toreque;
     if (angleLoop != nullptr) {
-        refState.velocity =
-            getTargetState().velocity +
+        refState.velocity +=
             angleLoop->calculate(refState.position, state.position);
-    } else {
-        refState.velocity = getTargetState().velocity;
     }
     if (speedLoop != nullptr) {
-        refState.toreque =
-            getTargetState().toreque +
+        refState.toreque +=
             speedLoop->calculate(refState.velocity, state.velocity);
-    } else {
-        refState.toreque = getTargetState().toreque;
     }
 
     return refState.toreque;
