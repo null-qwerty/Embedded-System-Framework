@@ -57,7 +57,7 @@ UnitreeA1 &UnitreeA1::deInit()
 
 UnitreeA1 &UnitreeA1::encodeControlMessage()
 {
-    int16_t data = clockwise * calculateControlData() / ratio;
+    int16_t data = clockwise * calculateControlData() / ratio * ifEnable;
 
     auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
     auto readindex = sendframe->readIndex;
