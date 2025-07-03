@@ -5,7 +5,8 @@
 class DM4310 : public Motor {
 public:
     DM4310(Connectivity &connectivity, uint16_t send_id, uint16_t receive_id,
-           int8_t cw, float ratio = 1.0f);
+           int8_t cw, float ratio = 1.0f, uint8_t option = MOTOR_OPTION_NONE,
+           MotorOptionData optionData = {});
     ~DM4310();
 
     DM4310 &init() final;
@@ -15,8 +16,6 @@ public:
     DM4310 &decodeFeedbackMessage() final;
 
 private:
-    uint8_t ifEnable = 0;
-
     const float DM4310_MAX_TAU = 10.f;
     const float DM4310_MAX_VEL = 30.f;
 

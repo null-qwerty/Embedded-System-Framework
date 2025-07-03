@@ -1,9 +1,12 @@
 #include "BaseControl/Motor/UnitreeA1.hpp"
+#include "BaseControl/Motor/Motor.hpp"
 #include "Math/Math.hpp"
+#include "Utils/Status.hpp"
 
 UnitreeA1::UnitreeA1(Connectivity &connectivity, uint16_t send_id,
-                     uint16_t receive_id, int8_t cw, float ratio)
-    : Motor(connectivity, send_id, receive_id)
+                     uint16_t receive_id, int8_t cw, float ratio,
+                     uint8_t option, MotorOptionData optionData)
+    : Motor(connectivity, send_id, receive_id, option, optionData)
 {
     this->clockwise *= cw;
     this->ratio = ratio;
@@ -15,6 +18,8 @@ UnitreeA1::~UnitreeA1()
 
 UnitreeA1 &UnitreeA1::init()
 {
+    state.status = STATUS_INITUALIZING;
+
     refState.position = 0;
     refState.velocity = 0;
     refState.toreque = 0;
@@ -25,23 +30,21 @@ UnitreeA1 &UnitreeA1::init()
     state.toreque = 0;
     state.temprature = 0;
 
-    auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
-    auto readindex = sendframe->readIndex;
-    auto sendBuffer = (sendData *)(sendframe->data[readindex]);
+    last_state.position = 9999.0f;
 
-    sendBuffer->header.start = 0xeefe;
-    sendBuffer->header.id = send_id;
-    sendBuffer->data.mode = 10;
-    sendBuffer->crc = crc32_core((uint32_t *)(sendBuffer), 7);
+    // this->encodeControlMessage(); // 发送使能报文
 
-    ifEnable = 1;
+    // 如果有软限位选项，设置软限位，没有则初始化完成
+    if (!(option & MOTOR_SOFT_ZERO)) {
+        state.status = STATUS_INITUALIZED;
+    }
 
     return *this;
 }
 
 UnitreeA1 &UnitreeA1::deInit()
 {
-    ifEnable = 0;
+    state.status = STATUS_DEINITUALIZING;
 
     auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
     auto readindex = sendframe->readIndex;
@@ -52,12 +55,14 @@ UnitreeA1 &UnitreeA1::deInit()
     sendBuffer->data.mode = 10;
     sendBuffer->crc = crc32_core((uint32_t *)(sendBuffer), 7);
 
+    state.status = STATUS_DEINITUALIZED;
+
     return *this;
 }
 
 UnitreeA1 &UnitreeA1::encodeControlMessage()
 {
-    int16_t data = clockwise * calculateControlData() / ratio * ifEnable;
+    int16_t data = clockwise * calculateControlData() / ratio;
 
     auto sendframe = (UART::xUARTFrame_t *)(connectivity.getSendFrame());
     auto readindex = sendframe->readIndex;
@@ -88,8 +93,24 @@ UnitreeA1 &UnitreeA1::decodeFeedbackMessage()
 
         // 计算输出轴位置/速度/力矩
         state.position /= ratio; // 位置和速度都除以齿轮比
+        state.position = (option & MOTOR_SOFT_ZERO) ?
+                             state.position - optionData.soft_zero :
+                             state.position; // 如果有软零点选项，减去软零点
         state.velocity /= ratio;
         state.toreque *= ratio; // 力矩乘以齿轮比
+
+        if (state.status == STATUS_INITUALIZING && (option & MOTOR_SOFT_ZERO)) {
+            // 如果正在初始化，并且有软零点选项，当速度为零时，认为撞到限位
+            state.position = state.position * 0.5 + last_state.position * 0.5;
+            if (state.position != last_state.position &&
+                fabsf(state.position - last_state.position) < 0.0001f &&
+                fabsf(state.toreque) > 9.0f) {
+                state.status = STATUS_INITUALIZED;
+                optionData.soft_zero =
+                    state.position - optionData.soft_limit_min; // 设置软零点
+            }
+            last_state = state; // 保存上一次状态
+        }
     }
 
     return *this;
@@ -97,6 +118,23 @@ UnitreeA1 &UnitreeA1::decodeFeedbackMessage()
 
 float UnitreeA1::calculateControlData()
 {
+    if (state.status == STATUS_INITUALIZING && (option & MOTOR_SOFT_ZERO)) {
+        // 如果正在初始化，并且有软零点选项，以恒定力矩倒转
+        return -13.0f;
+    } else if (!ifInitialed()) {
+        return 0.0f; // 如果未初始化，返回 0
+    }
+
+    // 限定位置范围
+    if (option & MOTOR_SOFT_LIMIT) {
+        getTargetState().position =
+            getTargetState().position < optionData.soft_limit_min ?
+                optionData.soft_limit_min :
+            getTargetState().position > optionData.soft_limit_max ?
+                optionData.soft_limit_max :
+                getTargetState().position;
+    }
+
     // 位置过零点处理
     if (getTargetState().position - getState().position > 180.0f)
         getTargetState().position -= 360.0f;

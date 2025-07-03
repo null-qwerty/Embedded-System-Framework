@@ -6,7 +6,8 @@
 class UnitreeA1 : public Motor {
 public:
     UnitreeA1(Connectivity &connectivity, uint16_t send_id, uint16_t receive_id,
-              int8_t cw, float ratio = 9.1f);
+              int8_t cw, float ratio = 9.1f, uint8_t option = MOTOR_OPTION_NONE,
+              MotorOptionData optionData = {});
     ~UnitreeA1();
 
     UnitreeA1 &init() final;
@@ -16,8 +17,7 @@ public:
     UnitreeA1 &decodeFeedbackMessage() final;
 
 private:
-    uint8_t ifEnable = 0;
-
+    MotorState last_state;
     float calculateControlData() final;
 
     uint32_t crc32_core(uint32_t *ptr, uint32_t len);

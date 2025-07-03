@@ -15,6 +15,8 @@ RM3508::~RM3508()
 
 RM3508 &RM3508::init()
 {
+    state.status = STATUS_INITUALIZING;
+
     state.position = 0;
     state.velocity = 0;
     state.toreque = 0;
@@ -25,13 +27,18 @@ RM3508 &RM3508::init()
     refState.toreque = 0;
     refState.temprature = 0;
 
-    initialed = true;
+    // 如果有软限位选项，设置软限位，没有则初始化完成
+    if (!(option & MOTOR_SOFT_ZERO)) {
+        state.status = STATUS_INITUALIZED;
+    }
 
     return *this;
 }
 
 RM3508 &RM3508::deInit()
 {
+    state.status = STATUS_DEINITUALIZING;
+
     state.position = 0;
     state.velocity = 0;
     state.toreque = 0;
@@ -42,7 +49,7 @@ RM3508 &RM3508::deInit()
     refState.toreque = 0;
     refState.temprature = 0;
 
-    initialed = false;
+    state.status = STATUS_DEINITUALIZED;
 
     return *this;
 }
@@ -73,6 +80,7 @@ RM3508 &RM3508::decodeFeedbackMessage()
     state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
     state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
     state.temprature = data[6];
+    // TODO: 软限位和软零点，参考 A1 电机
     // 计算输出轴位置/速度/力矩，注意由于没有计算转子圈数，位置不是输出轴的实际位置
     state.position /= ratio; // 位置和速度都除以齿轮比
     state.velocity /= ratio;
@@ -83,6 +91,7 @@ RM3508 &RM3508::decodeFeedbackMessage()
 
 float RM3508::calculateControlData()
 {
+    // TODO: 软限位和软零点，参考 A1 电机
     // 位置过零点处理
     if (getTargetState().position - getState().position > 180.0f)
         getTargetState().position -= 360.0f;

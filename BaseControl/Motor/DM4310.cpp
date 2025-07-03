@@ -3,8 +3,9 @@
 #include "Math/Math.hpp"
 
 DM4310::DM4310(Connectivity &connectivity, uint16_t send_id,
-               uint16_t receive_id, int8_t cw, float ratio)
-    : Motor(connectivity, send_id, receive_id)
+               uint16_t receive_id, int8_t cw, float ratio, uint8_t option,
+               MotorOptionData optionData)
+    : Motor(connectivity, send_id, receive_id, option, optionData)
 {
     this->clockwise *= cw;
     this->ratio = ratio;
@@ -15,6 +16,8 @@ DM4310::~DM4310()
 
 DM4310 &DM4310::init()
 {
+    state.status = STATUS_INITUALIZING;
+
     refState.position = 0;
     refState.velocity = 0;
     refState.toreque = 0;
@@ -45,11 +48,17 @@ DM4310 &DM4310::init()
 
     connectivity.sendMessage();
 
+    if (!(option & MOTOR_SOFT_ZERO)) {
+        state.status = STATUS_INITUALIZED; // 如果没有软零点选项，直接初始化完成
+    }
+
     return *this;
 }
 
 DM4310 &DM4310::deInit()
 {
+    state.status = STATUS_DEINITUALIZING;
+
     uint8_t buffer[8];
 
     // 失能报文
@@ -69,6 +78,8 @@ DM4310 &DM4310::deInit()
     }
 
     connectivity.sendMessage();
+
+    state.status = STATUS_DEINITUALIZED;
 
     return *this;
 }
@@ -115,6 +126,7 @@ DM4310 &DM4310::decodeFeedbackMessage()
     state.toreque = clockwise * linearUint2Float(
                                     (((uint16_t)data[4] & 0x0f) << 8) | data[5],
                                     DM4310_MAX_TAU, -DM4310_MAX_TAU, 12);
+    // TODO: 软限位和软零点，参考 A1 电机
 
     // 计算输出轴位置/速度/力矩
     state.position /= ratio; // 位置和速度都除以齿轮比
@@ -144,6 +156,7 @@ float DM4310::linearUint2Float(uint16_t x, float x_max, float x_min,
 
 float DM4310::calculateControlData()
 {
+    // TODO: 软限位和软零点，参考 A1 电机
     // 位置过零点处理
     if (getTargetState().position - state.position > 180.0f)
         getTargetState().position -= 360.0f;

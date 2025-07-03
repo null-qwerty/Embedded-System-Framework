@@ -3,6 +3,8 @@
 #include "BaseControl/Connectivity/Connectivity.hpp"
 #include "BaseControl/Controller/classicController.hpp"
 
+#include "Utils/Status.hpp"
+
 /**
  * @brief class Motor
  * 封装了控制电机所需的内容，使用前需初始化其中的控制器，抽象类
@@ -29,7 +31,20 @@ public:
         float velocity; ///< 速度
         float toreque; ///< 力矩，电流
         float temprature; ///< 温度
+        Status status = STATUS_DEINITUALIZED;
     } MotorState;
+
+    typedef enum {
+        MOTOR_OPTION_NONE = 0x00, ///< 无选项
+        MOTOR_SOFT_LIMIT = 0x01, ///< 软限位
+        MOTOR_SOFT_ZERO = 0x02, ///< 软零点
+    } MotorOption;
+
+    typedef struct {
+        float soft_limit_min; ///< 软限位最小值
+        float soft_limit_max; ///< 软限位最大值
+        float soft_zero; ///< 软零点
+    } MotorOptionData;
 
     /**
      * @brief Motor 构造函数
@@ -38,7 +53,8 @@ public:
      * @param send_id 发送 ID
      * @param receive_id 接收 ID
      */
-    Motor(Connectivity &connectivity, uint16_t send_id, uint16_t receive_id);
+    Motor(Connectivity &connectivity, uint16_t send_id, uint16_t receive_id,
+          uint8_t option = MOTOR_OPTION_NONE, MotorOptionData optionData = {});
     /**
      * @brief Motor 析构函数
      *
@@ -124,6 +140,9 @@ protected:
     MotorState targetState = {}; ///< 电机目标状态
     MotorState refState = {}; ///< 电机目标状态, 用于控制器计算
 
+    uint8_t option = MOTOR_OPTION_NONE; ///< 电机选项
+    MotorOptionData optionData; ///< 电机选项数据
+
     classicController *angleLoop = nullptr;
     classicController *speedLoop = nullptr;
     classicController *currentLoop = nullptr;
@@ -133,9 +152,7 @@ protected:
     int8_t clockwise = 1; ///< 旋转方向
     float ratio = 1.0f; ///< 传动比
 
-    bool initialed = false;
-
-    virtual float calculateControlData() = 0;
+    virtual float calculateControlData();
 };
 
 using Wheel = Motor;
