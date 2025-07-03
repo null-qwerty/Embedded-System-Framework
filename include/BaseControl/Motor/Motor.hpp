@@ -81,6 +81,13 @@ public:
     MotorState &getTargetState();
 
     /**
+     * @brief 获取电机额外设定值
+     *
+     * @return MotorOptionData& 设定值
+     */
+    MotorOptionData &getOptionData();
+
+    /**
      * @brief 获取角度环控制器
      *
      * @return pidController& 角度环控制器

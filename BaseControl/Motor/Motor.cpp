@@ -26,6 +26,11 @@ Motor::MotorState &Motor::getTargetState(void)
     return targetState;
 }
 
+Motor::MotorOptionData &Motor::getOptionData()
+{
+    return this->optionData;
+}
+
 classicController *&Motor::getAngleLoopController()
 {
     return this->angleLoop;
