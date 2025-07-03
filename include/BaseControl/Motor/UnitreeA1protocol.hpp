@@ -11,8 +11,8 @@ typedef struct {
 } COMHead;
 
 typedef struct {
-    uint8_t mode;       // 电机运动模式，0(停转)，5(开环缓慢转动)，10(闭环伺服控制)
-    uint8_t ModifyBit;  // 电机内部控制参数修改位，请设置为255
+    uint8_t mode = 10;       // 电机运动模式，0(停转)，5(开环缓慢转动)，10(闭环伺服控制)
+    uint8_t ModifyBit = 255;  // 电机内部控制参数修改位，请设置为255
     uint8_t ReadBit;    // 电机内部控制参数发送位，可忽略
     uint8_t reserved;   // 预留位
     uint32_t Modify;    // 电机参数修改数据，可忽略
