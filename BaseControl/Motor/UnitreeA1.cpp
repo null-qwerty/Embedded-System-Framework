@@ -82,9 +82,7 @@ UnitreeA1 &UnitreeA1::decodeFeedbackMessage()
     auto receiveframe = (UART::xUARTFrame_t *)(connectivity.getReceiveFrame());
     auto readindex = receiveframe->readIndex;
     auto receiveBuffer = (receiveData *)(receiveframe->data[readindex]);
-    if (receiveBuffer->header.start == 0xeefe &&
-        receiveBuffer->header.id == receive_id &&
-        receiveBuffer->crc == crc32_core((uint32_t *)(receiveBuffer), 18)) {
+    if (receiveBuffer->header.id == receive_id) {
         state.position =
             1.0 * clockwise * receiveBuffer->data.Pos * 2 * PI / 16384.;
         state.velocity = 1.0 * clockwise * receiveBuffer->data.W / 128.;

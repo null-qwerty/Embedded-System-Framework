@@ -15,10 +15,9 @@ public:
 
     UnitreeA1 &encodeControlMessage() final;
     UnitreeA1 &decodeFeedbackMessage() final;
+    static uint32_t crc32_core(uint32_t *ptr, uint32_t len);
 
 private:
     MotorState last_state;
     float calculateControlData() final;
-
-    uint32_t crc32_core(uint32_t *ptr, uint32_t len);
 };
