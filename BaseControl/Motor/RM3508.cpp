@@ -56,7 +56,13 @@ RM3508 &RM3508::deInit()
 
 RM3508 &RM3508::encodeControlMessage()
 {
-    int16_t data = clockwise * calculateControlData() * ifInitialed() / ratio;
+    auto t = clockwise * calculateControlData() * ifInitialed() / ratio *
+             ratio_0 / 3.0f;
+    if (t > 1.0f)
+        t = 1.0f;
+    else if (t < -1.0f)
+        t = -1.0f;
+    int16_t data = t * 16384;
     if (connectivity.method == Connectivity::Method::CAN) {
         return encodeCanData(data);
     } else if (connectivity.method == Connectivity::Method::FDCAN) {
@@ -84,7 +90,7 @@ RM3508 &RM3508::decodeFeedbackMessage()
     // 计算输出轴位置/速度/力矩，注意由于没有计算转子圈数，位置不是输出轴的实际位置
     state.position /= ratio; // 位置和速度都除以齿轮比
     state.velocity /= ratio;
-    state.toreque *= ratio; // 力矩乘以齿轮比
+    state.toreque *= ratio / ratio_0 * 3.0f / 16384.f; // 力矩乘以齿轮比
 
     return *this;
 }
