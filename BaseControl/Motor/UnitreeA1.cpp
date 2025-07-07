@@ -118,7 +118,7 @@ float UnitreeA1::calculateControlData()
 {
     if (state.status == STATUS_INITUALIZING && (option & MOTOR_SOFT_ZERO)) {
         // 如果正在初始化，并且有软零点选项，以恒定力矩倒转
-        return -13.0f;
+        return -15.0f;
     } else if (!ifInitialed()) {
         return 0.0f; // 如果未初始化，返回 0
     }
