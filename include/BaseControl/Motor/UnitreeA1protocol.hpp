@@ -4,6 +4,15 @@
 
 #pragma pack(1)
 // clang-format off
+typedef union
+{
+    int32_t L;
+    uint8_t u8[4];
+    uint16_t u16[2];
+    uint32_t u32;
+    float F;
+} COMData32;
+
 typedef struct {
     uint16_t start = 0xeefe; // 包头, 两个字节 0xfe 和 0xee，小端序下先低位再高位
     uint8_t id;              // 电机 id 可以为 0、1、2、0xBB，0xBB 代表向所有电机广播
@@ -31,12 +40,12 @@ typedef struct {
     uint8_t ReadBit;    // 表示电机内部控制参数是否修改成功
     int8_t Temp;       // 电机当前平均温度
     uint8_t MError;     // 电机报错信息
-    uint32_t Read;      // 读取电机内部控制参数，可忽略
+    COMData32 Read;      // 读取电机内部控制参数，可忽略
     int16_t T;         // 当前电机输出力矩 * 256
     int16_t W;         // 当前电机实际转速 * 128
-    int32_t LW;        // 经过滤波的电机实际转速
+    float LW;        // 经过滤波的电机实际转速
     int16_t W2;        // 关节编码器预留，可忽略
-    int32_t LW2;       // 关节编码器预留，可忽略
+    float LW2;       // 关节编码器预留，可忽略
     int16_t Acc;       // 当前电机转动加速度
     int16_t OutAcc;    // 关节编码器预留
     int32_t Pos;       // 当前电机角度位置 * 16384 / 2PI
