@@ -36,6 +36,8 @@ private:
     const uint16_t MAX_POISION_DATA = 8191;
     const uint16_t MAX_CURRENT_DATA = 16384;
     const float ratio_0 = 3591.0f / 187.0f; ///< 3508 默认减速比
+    float last_position = 9999.0f;
+    int8_t count = 0;
 
     float calculateControlData() final;
 

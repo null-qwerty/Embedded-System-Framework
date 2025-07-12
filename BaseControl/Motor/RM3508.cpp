@@ -1,5 +1,7 @@
 #include "BaseControl/Motor/RM3508.hpp"
 #include "BaseControl/Motor/Motor.hpp"
+#include "Math/Math.hpp"
+#include "Math/Trigonometric.hpp"
 
 RM3508::RM3508(Connectivity &connectivity, uint16_t sendid, uint16_t receive_id,
                int8_t cw, float ratio)
@@ -56,13 +58,13 @@ RM3508 &RM3508::deInit()
 
 RM3508 &RM3508::encodeControlMessage()
 {
-    auto t = clockwise * calculateControlData() * ifInitialed() / ratio *
-             ratio_0 / 3.0f;
-    if (t > 1.0f)
-        t = 1.0f;
-    else if (t < -1.0f)
-        t = -1.0f;
-    int16_t data = t * 16384;
+    auto current = clockwise * calculateControlData() * ifInitialed() / ratio *
+                   ratio_0 / 0.3f;
+    if (current > MAX_CURRENT)
+        current = MAX_CURRENT;
+    else if (current < -MAX_CURRENT)
+        current = -MAX_CURRENT;
+    int16_t data = current / MAX_CURRENT * MAX_CURRENT_DATA;
     if (connectivity.method == Connectivity::Method::CAN) {
         return encodeCanData(data);
     } else if (connectivity.method == Connectivity::Method::FDCAN) {
@@ -81,16 +83,28 @@ RM3508 &RM3508::decodeFeedbackMessage()
         data = getFdcanData();
     }
 
-    state.position =
-        1.0 * clockwise * (data[0] << 8 | data[1]) / MAX_POISION_DATA * 360.0f;
-    state.velocity = 1.0 * clockwise * (int16_t)(data[2] << 8 | data[3]);
-    state.toreque = 1.0 * clockwise * (int16_t)(data[4] << 8 | data[5]);
+    auto position =
+        1.0f * clockwise * (data[0] << 8 | data[1]) / MAX_POISION_DATA * 2 * PI;
+    auto velocity = 1.0f * clockwise * (int16_t)(data[2] << 8 | data[3]);
+    auto toreque = 1.0f * clockwise * (int16_t)(data[4] << 8 | data[5]) /
+                   MAX_CURRENT_DATA * MAX_CURRENT * 0.3f / ratio_0;
     state.temprature = data[6];
+    if (last_position != 9999.0f) {
+        if (position - last_position > 2.0f)
+            count--;
+        else if (position - last_position < -2.0f)
+            count++;
+        if (count > ratio / 2)
+            count = -ratio / 2;
+        else if (count < -ratio / 2)
+            count = ratio / 2;
+    }
+    last_position = position;
     // TODO: 软限位和软零点，参考 A1 电机
-    // 计算输出轴位置/速度/力矩，注意由于没有计算转子圈数，位置不是输出轴的实际位置
-    state.position /= ratio; // 位置和速度都除以齿轮比
-    state.velocity /= ratio;
-    state.toreque *= ratio / ratio_0 * 3.0f / 16384.f; // 力矩乘以齿轮比
+    state.position =
+        (position + count * 2 * PI) / ratio; // 位置和速度都除以齿轮比
+    state.velocity = velocity / ratio;
+    state.toreque = toreque * ratio; // 力矩乘以齿轮比
 
     return *this;
 }
