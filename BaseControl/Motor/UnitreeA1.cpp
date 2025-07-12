@@ -2,6 +2,7 @@
 #include "BaseControl/Motor/Motor.hpp"
 #include "Math/Math.hpp"
 #include "Utils/Status.hpp"
+#include "crc.h"
 
 UnitreeA1::UnitreeA1(Connectivity &connectivity, uint16_t send_id,
                      uint16_t receive_id, int8_t cw, float ratio,
@@ -156,23 +157,24 @@ float UnitreeA1::calculateControlData()
 
 uint32_t UnitreeA1::crc32_core(uint32_t *ptr, uint32_t len)
 {
-    uint32_t xbit = 0;
-    uint32_t data = 0;
-    uint32_t CRC32 = 0xFFFFFFFF;
-    const uint32_t dwPolynomial = 0x04c11db7;
-    for (uint32_t i = 0; i < len; i++) {
-        xbit = 1 << 31;
-        data = ptr[i];
-        for (uint32_t bits = 0; bits < 32; bits++) {
-            if (CRC32 & 0x80000000) {
-                CRC32 <<= 1;
-                CRC32 ^= dwPolynomial;
-            } else
-                CRC32 <<= 1;
-            if (data & xbit)
-                CRC32 ^= dwPolynomial;
-            xbit >>= 1;
-        }
-    }
-    return CRC32;
+    // uint32_t xbit = 0;
+    // uint32_t data = 0;
+    // uint32_t CRC32 = 0xFFFFFFFF;
+    // const uint32_t dwPolynomial = 0x04c11db7;
+    // for (uint32_t i = 0; i < len; i++) {
+    //     xbit = 1 << 31;
+    //     data = ptr[i];
+    //     for (uint32_t bits = 0; bits < 32; bits++) {
+    //         if (CRC32 & 0x80000000) {
+    //             CRC32 <<= 1;
+    //             CRC32 ^= dwPolynomial;
+    //         } else
+    //             CRC32 <<= 1;
+    //         if (data & xbit)
+    //             CRC32 ^= dwPolynomial;
+    //         xbit >>= 1;
+    //     }
+    // }
+    // return CRC32;
+    return HAL_CRC_Calculate(&hcrc, ptr, len);
 }
