@@ -9,7 +9,7 @@ target_include_directories(dsp PRIVATE
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
 )
 
-set(PHOENIX_INCLUDE_DIRS
+set(FRAMEWORK_INCLUDE_DIRS
     ${CMAKE_CURRENT_LIST_DIR}/include
     /usr/arm-linux-gnueabi/include
     /usr/arm-linux-gnueabi/include/c++/14.2.1
@@ -17,20 +17,20 @@ set(PHOENIX_INCLUDE_DIRS
     ${CMSISDSP}/PrivateInclude
     ${CMSISDSP}/Include/dsp
     ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
-    CACHE INTERNAL "PHOENIX include directories"
+    CACHE INTERNAL "FRAMEWORK include directories"
 )
 
 include_directories(
-    ${PHOENIX_INCLUDE_DIRS}
+    ${FRAMEWORK_INCLUDE_DIRS}
 )
 
-file(GLOB_RECURSE PHOENIX_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE FRAMEWORK_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE 3RD-PARTY_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/3rd-party/*.cpp")
-list(REMOVE_ITEM PHOENIX_SOURCES ${3RD-PARTY_SOURCES})
+list(REMOVE_ITEM FRAMEWORK_SOURCES ${3RD-PARTY_SOURCES})
 
-add_library(phoenix ${PHOENIX_SOURCES})
+add_library(embedded_system_framework ${FRAMEWORK_SOURCES})
 
-target_link_libraries(phoenix
+target_link_libraries(embedded_system_framework
     dsp
     stm32cubemx
 )
