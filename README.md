@@ -1,4 +1,4 @@
-# Embedded Systems Framework
+# Embedded System Framework
 
 > V2 版本绝赞开发中，切换到 V2 分支查看最新进度。
 >
@@ -16,3 +16,24 @@
 
 ![](docs/layer.svg)
 
+## 使用方式
+
+1. 将本仓库作为子模块添加到项目根目录；
+2. 使用 CubeMX 生成代码，配置好 HAL，使用 cmake 工具链；
+3. 将 `main.c` 中头文件剪切到 `main.h` 中，并将 `main.c` 改为 `main.cpp`；
+4. 在 `CMakeLists.txt` 中启用 `C++` 语言，并添加以下内容：
+
+```cmake
+add_subdirectory(xxxxx) # 替换为子模块目录名
+include_directories(
+    # 添加其他需要的头文件目录
+    ${FRAMEWORK_INCLUDE_DIRS}
+)
+
+add_executable(${PROJECT_NAME} path/to/main.cpp) # 同时将 CubeMX 生成的 cmakelists 中添加 main.c 的一行删除
+
+target_link_libraries(${PROJECT_NAME} 
+    # 其他需要链接的库
+    embedded_system_framework
+)
+```
