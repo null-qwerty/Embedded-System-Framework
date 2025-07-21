@@ -1,0 +1,12 @@
+[submodule "3rd-party/cmsis-dsp"]
+	path = 3rd-party/cmsis-dsp
+	url = https://github.com/ARM-software/CMSIS-DSP.git
+[submodule "3rd-party/hal/stm32h7"]
+	path = 3rd-party/hal/stm32h7
+	url = https://github.com/STMicroelectronics/stm32h7xx-hal-driver.git
+[submodule "3rd-party/hal/stm32f4"]
+	path = 3rd-party/hal/stm32f4
+	url = https://github.com/STMicroelectronics/stm32f4xx-hal-driver.git
+[submodule "3rd-party/FreeRTOS"]
+	path = 3rd-party/FreeRTOS
+	url = https://github.com/FreeRTOS/FreeRTOS-Kernel.git
