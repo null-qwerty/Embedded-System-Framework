@@ -20,6 +20,10 @@ void *BMI088::getData()
     readAccel();
     readGyro();
     readTemperature();
+    // 矫正陀螺仪数据
+    data.gyro.yaw -= (kyaw * data.temperature + byaw);
+    data.gyro.pitch -= (kpitch * data.temperature + bpitch);
+    data.gyro.roll -= kroll * (data.temperature + broll);
 
     return &data;
 }
@@ -33,6 +37,19 @@ BMI088 &BMI088::reset()
     writeDataToGyro(BMI088_GYRO_SOFTRESET_REG, BMI088_GYRO_SOFTRESET_VALUE);
     HAL_Delay(50);
     init();
+    return *this;
+}
+
+BMI088 &BMI088::setGyroTemperatureCompensation(float kyaw, float kpitch,
+                                               float kroll, float byaw,
+                                               float bpitch, float broll)
+{
+    this->kyaw = kyaw;
+    this->kpitch = kpitch;
+    this->kroll = kroll;
+    this->byaw = byaw;
+    this->bpitch = bpitch;
+    this->broll = broll;
     return *this;
 }
 

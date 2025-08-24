@@ -25,10 +25,16 @@ public:
     virtual void *getData() override;
     virtual BMI088 &reset() override;
 
+    BMI088 &setGyroTemperatureCompensation(float kyaw, float kpitch,
+                                           float kroll, float byaw,
+                                           float bpitch, float broll);
+
 private:
     Data_t data = {};
     uint8_t accBuffer[7] = {}, gyroBuffer[6] = {}, temperatureBuffer[3] = {};
     uint8_t accChipID = 0, gyroChipID = 0;
+    float kyaw = 0.0, kpitch = 0.0, kroll = 0.0;
+    float byaw = 0.0, bpitch = 0.0, broll = 0.0;
 
     BMI088 &initAcc();
     BMI088 &initGyro();
